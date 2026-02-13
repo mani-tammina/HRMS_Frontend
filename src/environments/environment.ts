@@ -4,8 +4,7 @@ const local =
 
 export const environment = {
   production: false,
-  
-  apiURL: local ? 'localhost:3000' : 'tamminademoapps.com:9295',
-  // apiURL: local ? '30.0.0.128:4201' : 'tamminademoapps.com:9295',
-  // candidateURL: local ? '30.0.0.78:4200' : 'tamminademoapps.com:9292',
+
+  apiURL: '30.0.1.117:3000',
+  candidateURL: '30.0.1.117:4200',
 };

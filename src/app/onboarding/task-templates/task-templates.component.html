@@ -1,43 +1,119 @@
 <ion-header>
-    <!-- <app-header></app-header> -->
+  <!-- <app-header></app-header> -->
   <!-- Main Navbar -->
   <app-onboarding-mainheader></app-onboarding-mainheader>
 </ion-header>
 
 <ion-content class="task-templates-page">
+  <ion-content>
+    <div class="task-templates-container">
+      <div class="header">
+        <h2>Task Templates</h2>
+        <ion-button class="add-task-btn" fill="solid">
+          Add Task
+          <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </div>
 
-<ion-content>
-  <div class="task-templates-container">
-    <div class="header">
-      <h2>Task Templates</h2>
-      <ion-button class="add-task-btn" fill="solid">
-        Add Task
-        <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
-      </ion-button>
+      <div class="intro-card">
+        <div class="intro-text">
+          <h3>Introducing Task Templates</h3>
+          <ul>
+            <li>
+              <ion-icon name="checkmark-outline"></ion-icon>
+              Automatically have task assign to employees based on Department /
+              Location etc with new applies to filter
+            </li>
+            <li>
+              <ion-icon name="checkmark-outline"></ion-icon>
+              Reduce the hassle of adding task list and assigning them to
+              onboarding group
+            </li>
+          </ul>
+          <a href="javascript:void(0)" (click)="showInfoModal = true"
+            >Click here to know more</a
+          >
+        </div>
+
+        <div class="intro-image">
+          <img
+            src="assets/task-template.png"
+            alt="Task Templates Illustration"
+          />
+        </div>
+      </div>
     </div>
+  </ion-content>
+</ion-content>
 
-    <div class="intro-card">
-      <div class="intro-text">
-        <h3>Introducing Task Templates</h3>
-        <ul>
-          <li>
-            <ion-icon name="checkmark-outline"></ion-icon>
-            Automatically have task assign to employees based on Department / Location etc with new applies to filter
-          </li>
-          <li>
-            <ion-icon name="checkmark-outline"></ion-icon>
-            Reduce the hassle of adding task list and assigning them to onboarding group
-          </li>
-        </ul>
-        <a href="#">Click here to know more</a>
-      </div>
+<!-- Know More Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showInfoModal"
+  (click)="showInfoModal = false"
+>
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>About Task Templates</h3>
+      <button class="modal-close-btn" (click)="showInfoModal = false">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <h4>What are Task Templates?</h4>
+      <p>
+        Task Templates allow you to create predefined sets of tasks that can be
+        automatically assigned to new employees during the onboarding process.
+        Instead of manually creating and assigning tasks for each new hire, you
+        can set up templates that handle it all for you.
+      </p>
 
-      <div class="intro-image">
-        <img src="assets/task-template.png" alt="Task Templates Illustration" />
-      </div>
+      <h4>Key Features</h4>
+      <ul>
+        <li>
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <span
+            ><strong>Auto-Assignment:</strong> Tasks are automatically assigned
+            to employees based on Department, Location, or other filters.</span
+          >
+        </li>
+        <li>
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <span
+            ><strong>Reusable Templates:</strong> Create a template once and
+            reuse it for every new onboarding.</span
+          >
+        </li>
+        <li>
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <span
+            ><strong>Applies-To Filters:</strong> Use filters like Department,
+            Location, Job Title, etc. to target the right employees.</span
+          >
+        </li>
+        <li>
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <span
+            ><strong>Reduced Manual Work:</strong> Eliminate the need to
+            manually add task lists and assign them to onboarding groups.</span
+          >
+        </li>
+      </ul>
+
+      <h4>How It Works</h4>
+      <ol>
+        <li>
+          Create a new task template using the <strong>Add Task</strong> button.
+        </li>
+        <li>
+          Define the tasks and set the "Applies To" filters (e.g., Department =
+          Engineering).
+        </li>
+        <li>
+          When a new employee matching the filter is onboarded, the tasks are
+          automatically assigned.
+        </li>
+      </ol>
     </div>
   </div>
-</ion-content>
-
-
-</ion-content>
+</div>

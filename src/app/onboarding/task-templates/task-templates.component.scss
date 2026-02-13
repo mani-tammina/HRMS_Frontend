@@ -82,3 +82,118 @@
     }
   }
 }
+
+// Info Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.modal-container {
+  background: #fff;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  color: #64748b;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: #1e293b;
+  }
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e293b;
+  }
+
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #334155;
+
+      ion-icon {
+        font-size: 20px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  ol {
+    padding-left: 20px;
+    margin: 0;
+
+    li {
+      font-size: 14px;
+      color: #334155;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+  }
+}
