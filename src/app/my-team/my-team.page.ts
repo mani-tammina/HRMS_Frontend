@@ -239,8 +239,9 @@ export class MyTeamPage implements OnInit, OnDestroy {
         console.log('✅ First mapped member:', this.teamMembers[0]);
 
         this.applyAttendanceFilter();
-        console.log('✅ Filtered Members after filter:', this.filteredMembers.length);
-        console.log('✅ Current filter:', this.attendanceFilter);
+        
+        // Match real-time status immediately if viewing today
+        this.syncRealTimeStatusToTeamMembers();
 
         this.loading = false;
       },
@@ -256,6 +257,11 @@ export class MyTeamPage implements OnInit, OnDestroy {
   onDateChange(event: any) {
     this.selectedDate = event.detail.value.split('T')[0];
     this.loadAttendanceData();
+  }
+
+  isToday(): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.selectedDate === today;
   }
 
   /* ================= TOGGLE ATTENDANCE VIEW ================= */
@@ -415,6 +421,8 @@ export class MyTeamPage implements OnInit, OnDestroy {
             };
           });
 
+          this.syncRealTimeStatusToTeamMembers();
+
           console.log('\n✅ Final Employee Status Map:', JSON.stringify(this.employeeStatusMap, null, 2));
           console.log('📊 Total employees in map:', Object.keys(this.employeeStatusMap).length);
         } else {
@@ -452,6 +460,55 @@ export class MyTeamPage implements OnInit, OnDestroy {
     } catch (e) {
       return '—';
     }
+  }
+
+  /* ================= SYNC STATUS HELPER ================= */
+
+  private syncRealTimeStatusToTeamMembers(): void {
+    if (!this.isToday() || !this.teamMembers.length) return;
+
+    console.log('🔄 Syncing real-time punch status to team members list...');
+    this.teamMembers.forEach(member => {
+      const realTime = this.employeeStatusMap[member.id];
+      if (realTime && realTime.status === 'in') {
+        if (!member.attendance) {
+          member.attendance = { status: 'absent', attendance: null };
+        }
+        
+        // If they are clocked in but report says 'absent', force 'present'
+        if (member.attendance.status === 'absent') {
+          console.log(`📍 Correcting status for ${member.FullName}: Absent -> Present (Real-time IN)`);
+          member.attendance.status = 'present';
+        }
+        
+        // Also sync work_mode for the ribbon if missing
+        if (realTime.work_mode && (!member.attendance.attendance || !member.attendance.attendance.work_mode)) {
+          if (!member.attendance.attendance) member.attendance.attendance = {};
+          member.attendance.attendance.work_mode = realTime.work_mode;
+        }
+      }
+    });
+
+    // ✅ Recalculate summary counts to reflect real-time changes
+    if (this.attendanceSummary) {
+      let presentCount = 0;
+      let absentCount = 0;
+      let leaveCount = 0;
+
+      this.teamMembers.forEach(m => {
+        const s = m.attendance?.status || 'absent';
+        if (s === 'present') presentCount++;
+        else if (s === 'on_leave') leaveCount++;
+        else absentCount++;
+      });
+
+      this.attendanceSummary.present = presentCount;
+      this.attendanceSummary.absent = absentCount;
+      this.attendanceSummary.on_leave = leaveCount;
+      this.attendanceSummary.total_team = this.teamMembers.length;
+    }
+    
+    this.applyAttendanceFilter();
   }
 
   /* ================= MANUAL REFRESH ================= */
