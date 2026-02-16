@@ -12,13 +12,14 @@ import { LeaverequestService, MyLeave } from 'src/app/services/leaverequest.serv
 import { EmployeeService } from 'src/app/services/employee.service';
 import { WeeklyOffPolicyService, WeeklyOffPolicy } from 'src/app/services/weekly-off-policy.service';
 import { AdminService } from 'src/app/services/admin-functionality/admin.service.service';
+import { TimeFormatPipe } from '../time-format.pipe';
 
 @Component({
   selector: 'app-attendance-log',
   standalone: true,
   templateUrl: './attendance-log.component.html',
   styleUrls: ['./attendance-log.component.scss'],
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, TimeFormatPipe],
 })
 export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
   @Input() refreshTrigger: any;

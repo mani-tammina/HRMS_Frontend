@@ -59,7 +59,7 @@
       </ng-container>
       <span class="pl-5"
         *ngIf="!log.noLogs && log.status !== 'on-leave' && log.status !== 'weekend' && log.status !== 'holiday'; else noLogs">
-        ({{ log.effective_hours || '-' }})
+        ({{ log.effective_hours | timeFormat }})
       </span>
       <ng-template #noLogs>
         <span *ngIf="log.status !== 'weekend' && log.status !== 'on-leave' && log.status !== 'holiday'" class="pl-5"
@@ -84,6 +84,11 @@
     <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ formatHours(log.effective_hours)
       }}</ion-col>
     <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ formatHours(log.gross_hours)
+    <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ log.effective_hours | timeFormat
+      }}</ion-col>
+    <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ log.gross_hours | timeFormat
+      }}</ion-col>
+    <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ getArrivalStatus(log)
       }}</ion-col>
     <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">
       <div style="display: flex; align-items: center;">
