@@ -482,7 +482,9 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
     return remoteRecs;
   }
 
-  getArrivalStatus(status: string): string {
+  getArrivalStatus(log: any): string {
+    if (!log) return 'Unknown';
+    const status = log.status;
     const statusMap: { [key: string]: string } = {
       present: 'On Time',
       absent: 'Absent',
@@ -490,6 +492,28 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
       late: 'Late Arrival',
       'on-leave': 'On Leave',
     };
+
+    if (status === 'late' && log.first_check_in && log.shift_start_time) {
+      try {
+        const checkIn = new Date(log.first_check_in);
+        const [sHour, sMin, sSec] = log.shift_start_time.split(':').map(Number);
+        const shiftStart = new Date(checkIn);
+        shiftStart.setHours(sHour, sMin, sSec || 0, 0);
+
+        const diffMs = checkIn.getTime() - shiftStart.getTime();
+        if (diffMs > 0) {
+          const diffMins = Math.floor(diffMs / (1000 * 60));
+          if (diffMins >= 60) {
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+            return `Late by ${hours}h ${mins}m`;
+          }
+          return `Late by ${diffMins} mins`;
+        }
+      } catch (e) {
+        console.error('Error calculating lateness:', e);
+      }
+    }
 
     return statusMap[status] || 'Unknown';
   }

@@ -78,7 +78,7 @@
     <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ log.gross_hours || (log.status
       === 'weekend' || log.status === 'on-leave' ? '-' : '-')
       }}</ion-col>
-    <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ getArrivalStatus(log.status)
+    <ion-col size="2" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">{{ getArrivalStatus(log)
       }}</ion-col>
     <ion-col size="1" *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'">
       <ion-icon *ngIf="log.status !== 'weekend' && log.status !== 'on-leave'" name="information-circle-outline"
