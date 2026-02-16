@@ -51,11 +51,11 @@
         <div class="hours-block" *ngIf="!loadingDetails && attendanceDetails?.has_attendance">
           <div>
             <p>Gross Hours</p>
-            <p>{{ attendanceDetails?.attendance?.gross_hours || '0.00' }}h</p>
+            <p>{{ attendanceDetails?.attendance?.gross_hours | timeFormat }}h</p>
           </div>
           <div>
             <p>Effective Hours</p>
-            <p>{{ attendanceDetails?.attendance?.total_work_hours || '0.00' }}h</p>
+            <p>{{ attendanceDetails?.attendance?.total_work_hours | timeFormat }}h</p>
           </div>
         </div>
         <ion-content class="logs-block ion-padding" *ngIf="!loadingDetails && attendanceDetails?.has_attendance">

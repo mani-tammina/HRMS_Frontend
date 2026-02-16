@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { AttendanceApiService } from '../../../services/attendance-api.service';
+import { TimeFormatPipe } from '../time-format.pipe';
 
 interface CalendarDay {
   day: number | '';
@@ -14,7 +15,7 @@ interface CalendarDay {
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule]
+  imports: [IonicModule, CommonModule, TimeFormatPipe]
 
 })
 export class CalendarComponent implements OnInit {
