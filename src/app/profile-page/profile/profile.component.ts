@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit,SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CandidateService, Employee } from '../../services/pre-onboarding.service';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -32,7 +32,7 @@ export class ProfileComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['currentEmployee']?.currentValue) {
       console.log(
-        '✅ AboutusComponent received employee:',
+        '✅ ProfileComponent received employee:',
         this.currentEmployee
       );
     }
@@ -45,5 +45,18 @@ export class ProfileComponent implements OnChanges {
   }
   isEditAddress() {
     this.isAdress = !this.isAdress;
+  }
+
+  onSave() {
+    console.log('🚀 onSave triggered!');
+    console.log('Current Employee Data:', this.currentEmployee);
+
+    // Alert for immediate feedback to the user
+    
+
+    // Reset all edit flags
+    this.Isedit = false;
+    this.IsDetails = false;
+    this.isAdress = false;
   }
 }
