@@ -10,8 +10,8 @@ export class TimeFormatPipe implements PipeTransform {
      * or a numeric string into HH:mm.
      */
     transform(value: any): string {
-        if (value === null || value === undefined || value === '') {
-            return '00:00';
+        if (value === null || value === undefined || value === '' || value === '-') {
+            return '-';
         }
 
         const numericValue = parseFloat(value);

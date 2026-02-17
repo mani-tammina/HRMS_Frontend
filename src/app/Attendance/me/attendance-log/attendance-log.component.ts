@@ -323,7 +323,7 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
           if (leaveType) {
             return {
               attendance_date: date,
-              effective_hours: null,
+              total_work_hours: null,
               gross_hours: null,
               status: 'on-leave',
               leaveType: leaveType,
@@ -333,7 +333,7 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
           } else if (isWeekOff) {
             return {
               attendance_date: date,
-              effective_hours: null,
+              total_work_hours: null,
               gross_hours: null,
               status: 'weekend',
               leaveType: 'Full day week off',
@@ -345,7 +345,7 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
           } else {
             return {
               attendance_date: date,
-              effective_hours: null,
+              total_work_hours: null,
               gross_hours: null,
               status: 'absent',
               records: [],
@@ -603,17 +603,23 @@ export class AttendanceLogComponent implements OnInit, OnDestroy, OnChanges {
     return statusMap[log.status] || 'Unknown';
   }
 
-  formatHours(hDecimal: any): string {
-    if (hDecimal === null || hDecimal === undefined || hDecimal === '-' || hDecimal === 0) return '-';
+  formatHours(hDecimal: any, logDate?: string): string {
+    if (hDecimal === null || hDecimal === undefined || hDecimal === '-') return '-';
     const totalHours = parseFloat(hDecimal);
     if (isNaN(totalHours)) return '-';
 
     const hours = Math.floor(totalHours);
     const minutes = Math.round((totalHours - hours) * 60);
 
-    if (hours === 0 && minutes === 0) return '-';
+    const suffix = logDate && this.islogToday(logDate) ? ' +' : '';
+    return `${hours}h ${minutes}m${suffix}`;
+  }
 
-    return `${hours}h ${minutes}m +`;
+  islogToday(date: string): boolean {
+    if (!date) return false;
+    const today = new Date().toISOString().split('T')[0];
+    const logDate = new Date(date).toISOString().split('T')[0];
+    return today === logDate;
   }
 
   getLateDuration(log: any): string {
