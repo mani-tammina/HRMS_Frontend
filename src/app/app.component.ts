@@ -154,7 +154,10 @@ export class AppComponent implements OnInit {
     localStorage.clear();
     this.authService.logout();
     sessionStorage.clear();
-    localStorage.removeItem('introSeen')
+    const introSeen: boolean | null = Boolean(localStorage.getItem('introSeen'));
+    if (!introSeen) {
+      localStorage.setItem('introSeen', 'false');
+    }
     this.router.navigate(['/login'], { replaceUrl: true });
   }
   handlePageRefresh(url: string) {

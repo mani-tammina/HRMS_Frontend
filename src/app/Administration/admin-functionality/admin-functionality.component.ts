@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminService, ShiftPolicyPayload } from 'src/app/services/admin-functionality/admin.service.service';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
 
@@ -53,7 +53,7 @@ export class adminFunctionalityComponent implements OnInit {
   editingBusinessUnitId: number | null = null;
 
 
-    // Pagination
+  // Pagination
   deptcurrentPage = 1;
   deptpageSize = 5;
   depttotalPages = 0;
@@ -123,7 +123,12 @@ export class adminFunctionalityComponent implements OnInit {
   designationName: string = '';
   editingDesignationId: number | null = null;
 
-  constructor(private service: AdminService, private router: Router, private routeGaurdService: RouteGuardService) { }
+  constructor(
+    private service: AdminService,
+    private router: Router,
+    private routeGaurdService: RouteGuardService,
+    private toastCtrl: ToastController
+  ) { }
 
   ngOnInit() {
     // Try to get userRole from routeGaurdService, fallback to localStorage
@@ -149,12 +154,22 @@ export class adminFunctionalityComponent implements OnInit {
     }
   }
   /* WEEKLY OFF POLICIES */
-  loadWeeklyOffPolicies() { 
+  loadWeeklyOffPolicies() {
     this.service.getWeeklyOffPolicies().subscribe(r => {
-    this.weeklyOffPolicies = r || [];
-    this.weeklyOffCurrentPage = 1;
-    this.calculateWeeklyOffPagination();
-  });
+      this.weeklyOffPolicies = r || [];
+      this.weeklyOffCurrentPage = 1;
+      this.calculateWeeklyOffPagination();
+    });
+  }
+
+  async presentToast(message: string, color: string = 'dark') {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2000,
+      position: 'top',
+      color
+    });
+    toast.present();
   }
   saveWeeklyOffPolicy() { this.service.createWeeklyOffPolicy(this.weeklyOffPolicyForm).subscribe(() => { this.loadWeeklyOffPolicies(); this.cancelWeeklyOffPolicy(); }); }
   editWeeklyOffPolicy(item: any) { this.editingWeeklyOffPolicyId = item.id; this.weeklyOffPolicyForm = { ...item }; }
@@ -183,12 +198,12 @@ export class adminFunctionalityComponent implements OnInit {
   }
 
   /* LOCATIONS */
-  loadLocations() { 
+  loadLocations() {
     this.service.getLocations().subscribe(r => {
-    this.locations = r || [];
-    this.currentLocationPage = 1;
-    this.calculateLocationPagination();
-  }); 
+      this.locations = r || [];
+      this.currentLocationPage = 1;
+      this.calculateLocationPagination();
+    });
   }
   openAddLocation() { this.showLocationForm = true; this.editingLocationId = null; this.locationName = ''; }
   saveLocation() { this.service.createLocation({ name: this.locationName }).subscribe(() => { this.loadLocations(); this.locationName = ''; this.cancelLocation(); }); }
@@ -198,12 +213,12 @@ export class adminFunctionalityComponent implements OnInit {
   cancelLocation() { this.locationName = ''; this.editingLocationId = null; }
 
   /* DEPARTMENTS */
-  loadDepartments() { 
+  loadDepartments() {
     this.service.getDepartments().subscribe(r => {
-    this.departments = r || [];
-    this.deptcurrentPage = 1;
-    this.calculatedeptPagination();
-  });
+      this.departments = r || [];
+      this.deptcurrentPage = 1;
+      this.calculatedeptPagination();
+    });
   }
   openAddDepartment() { this.showDepartmentForm = true; this.editingDepartmentId = null; this.departmentName = ''; }
   saveDepartment() { this.service.createDepartment({ name: this.departmentName }).subscribe(() => { this.loadDepartments(); this.departmentName = ''; this.cancelDepartment(); }); }
@@ -213,13 +228,13 @@ export class adminFunctionalityComponent implements OnInit {
   cancelDepartment() { this.departmentName = ''; this.editingDepartmentId = null; }
 
   /* SHIFTS */
-  loadShiftPolicies() { 
+  loadShiftPolicies() {
     this.service.getShiftPolicies().subscribe(r => {
-    this.shiftPolicies = r || [];
-    this.shiftCurrentPage = 1;
-    this.calculateShiftPagination();
-  });
-   }
+      this.shiftPolicies = r || [];
+      this.shiftCurrentPage = 1;
+      this.calculateShiftPagination();
+    });
+  }
   openAddShift() { this.showShiftForm = true; this.editingShiftId = null; }
   saveShift() {
     console.log('Saving new shift:', this.shiftForm);
@@ -270,17 +285,49 @@ export class adminFunctionalityComponent implements OnInit {
   }
 
   /* ANNOUNCEMENTS */
-  loadAnnouncements() { 
+  loadAnnouncements() {
     this.service.getAnnouncements().subscribe(r => {
-    this.announcements = r || [];
-    this.announcementCurrentPage = 1;
-    this.calculateAnnouncementPagination();
-  });
-   }
+      this.announcements = r || [];
+      this.announcementCurrentPage = 1;
+      this.calculateAnnouncementPagination();
+    });
+  }
   openAddAnnouncement() { this.showAnnouncementForm = true; this.editingAnnouncementId = null; this.announcementForm = { title: '', body: '', starts_at: '', ends_at: '' }; }
-  saveAnnouncement() { this.service.createAnnouncement(this.announcementForm).subscribe(() => { this.loadAnnouncements(); this.cancelAnnouncement(); }); }
+  saveAnnouncement() {
+    if (!this.announcementForm.title || !this.announcementForm.body || !this.announcementForm.starts_at || !this.announcementForm.ends_at) {
+      this.presentToast('Please fill all fields for the announcement', 'dark');
+      return;
+    }
+    this.service.createAnnouncement(this.announcementForm).subscribe({
+      next: () => {
+        this.presentToast('Announcement created successfully');
+        this.loadAnnouncements();
+        this.cancelAnnouncement();
+      },
+      error: (err) => {
+        this.presentToast('Failed to create announcement');
+        console.error(err);
+      }
+    });
+  }
   editAnnouncement(i: any) { this.showAnnouncementForm = true; this.editingAnnouncementId = i.id; this.announcementForm = { ...i }; }
-  updateAnnouncement() { this.service.updateAnnouncement(this.editingAnnouncementId!, this.announcementForm).subscribe(() => { this.loadAnnouncements(); this.cancelAnnouncement(); }); }
+  updateAnnouncement() {
+    if (!this.announcementForm.title || !this.announcementForm.body || !this.announcementForm.starts_at || !this.announcementForm.ends_at) {
+      this.presentToast('Please fill all fields for the announcement', 'dark');
+      return;
+    }
+    this.service.updateAnnouncement(this.editingAnnouncementId!, this.announcementForm).subscribe({
+      next: () => {
+        this.presentToast('Announcement updated successfully');
+        this.loadAnnouncements();
+        this.cancelAnnouncement();
+      },
+      error: (err) => {
+        this.presentToast('Failed to update announcement');
+        console.error(err);
+      }
+    });
+  }
   deleteAnnouncement(id: number) { this.service.deleteAnnouncement(id).subscribe(() => this.loadAnnouncements()); }
   cancelAnnouncement() { this.showAnnouncementForm = false; }
 
@@ -288,7 +335,7 @@ export class adminFunctionalityComponent implements OnInit {
   getDesignations() {
     this.service.getDesignations().subscribe(
       (data) => {
-        this.designations = data ||[];
+        this.designations = data || [];
         this.designationCurrentPage = 1;
         this.calculateDesignationPagination();
       },
@@ -424,194 +471,194 @@ export class adminFunctionalityComponent implements OnInit {
     this.loadBusinessUnits();
   }
 
-calculatedeptPagination() {
-  this.depttotalPages = Math.ceil(this.departments.length / this.deptpageSize);
-  this.updatePaginatedDepartments();
-}
-
-updatePaginatedDepartments() {
-  const startIndex = (this.deptcurrentPage - 1) * this.deptpageSize;
-  const endIndex = startIndex + this.deptpageSize;
-  this.paginatedDepartments = this.departments.slice(startIndex, endIndex);
-}
-
-goToNextdeptPage() {
-  if (this.deptcurrentPage < this.depttotalPages) {
-    this.deptcurrentPage++;
+  calculatedeptPagination() {
+    this.depttotalPages = Math.ceil(this.departments.length / this.deptpageSize);
     this.updatePaginatedDepartments();
   }
-}
 
-goToPreviousdeptPage() {
-  if (this.deptcurrentPage > 1) {
-    this.deptcurrentPage--;
-    this.updatePaginatedDepartments();
+  updatePaginatedDepartments() {
+    const startIndex = (this.deptcurrentPage - 1) * this.deptpageSize;
+    const endIndex = startIndex + this.deptpageSize;
+    this.paginatedDepartments = this.departments.slice(startIndex, endIndex);
   }
-}
 
-calculateLocationPagination() {
-  this.totalLocationPages = Math.ceil(this.locations.length / this.locationPageSize);
-  this.updatePaginatedLocations();
-}
+  goToNextdeptPage() {
+    if (this.deptcurrentPage < this.depttotalPages) {
+      this.deptcurrentPage++;
+      this.updatePaginatedDepartments();
+    }
+  }
 
-updatePaginatedLocations() {
-  const startIndex = (this.currentLocationPage - 1) * this.locationPageSize;
-  const endIndex = startIndex + this.locationPageSize;
-  this.paginatedLocations = this.locations.slice(startIndex, endIndex);
-}
+  goToPreviousdeptPage() {
+    if (this.deptcurrentPage > 1) {
+      this.deptcurrentPage--;
+      this.updatePaginatedDepartments();
+    }
+  }
 
-goToNextLocationPage() {
-  if (this.currentLocationPage < this.totalLocationPages) {
-    this.currentLocationPage++;
+  calculateLocationPagination() {
+    this.totalLocationPages = Math.ceil(this.locations.length / this.locationPageSize);
     this.updatePaginatedLocations();
   }
-}
 
-goToPreviousLocationPage() {
-  if (this.currentLocationPage > 1) {
-    this.currentLocationPage--;
-    this.updatePaginatedLocations();
+  updatePaginatedLocations() {
+    const startIndex = (this.currentLocationPage - 1) * this.locationPageSize;
+    const endIndex = startIndex + this.locationPageSize;
+    this.paginatedLocations = this.locations.slice(startIndex, endIndex);
   }
-}
-calculateDesignationPagination() {
-  this.designationTotalPages = Math.ceil(
-    this.designations.length / this.designationPageSize
-  );
-  this.updatePaginatedDesignations();
-}
 
-updatePaginatedDesignations() {
-  const startIndex =
-    (this.designationCurrentPage - 1) * this.designationPageSize;
-  const endIndex = startIndex + this.designationPageSize;
+  goToNextLocationPage() {
+    if (this.currentLocationPage < this.totalLocationPages) {
+      this.currentLocationPage++;
+      this.updatePaginatedLocations();
+    }
+  }
 
-  this.paginatedDesignations = this.designations.slice(startIndex, endIndex);
-}
-
-goToNextDesignationPage() {
-  if (this.designationCurrentPage < this.designationTotalPages) {
-    this.designationCurrentPage++;
+  goToPreviousLocationPage() {
+    if (this.currentLocationPage > 1) {
+      this.currentLocationPage--;
+      this.updatePaginatedLocations();
+    }
+  }
+  calculateDesignationPagination() {
+    this.designationTotalPages = Math.ceil(
+      this.designations.length / this.designationPageSize
+    );
     this.updatePaginatedDesignations();
   }
-}
 
-goToPreviousDesignationPage() {
-  if (this.designationCurrentPage > 1) {
-    this.designationCurrentPage--;
-    this.updatePaginatedDesignations();
+  updatePaginatedDesignations() {
+    const startIndex =
+      (this.designationCurrentPage - 1) * this.designationPageSize;
+    const endIndex = startIndex + this.designationPageSize;
+
+    this.paginatedDesignations = this.designations.slice(startIndex, endIndex);
   }
-}
-calculateShiftPagination() {
-  this.shiftTotalPages = Math.ceil(
-    this.shiftPolicies.length / this.shiftPageSize
-  );
-  this.updatePaginatedShiftPolicies();
-}
 
-updatePaginatedShiftPolicies() {
-  const startIndex = (this.shiftCurrentPage - 1) * this.shiftPageSize;
-  const endIndex = startIndex + this.shiftPageSize;
-  this.paginatedShiftPolicies = this.shiftPolicies.slice(startIndex, endIndex);
-}
+  goToNextDesignationPage() {
+    if (this.designationCurrentPage < this.designationTotalPages) {
+      this.designationCurrentPage++;
+      this.updatePaginatedDesignations();
+    }
+  }
 
-goToNextShiftPage() {
-  if (this.shiftCurrentPage < this.shiftTotalPages) {
-    this.shiftCurrentPage++;
+  goToPreviousDesignationPage() {
+    if (this.designationCurrentPage > 1) {
+      this.designationCurrentPage--;
+      this.updatePaginatedDesignations();
+    }
+  }
+  calculateShiftPagination() {
+    this.shiftTotalPages = Math.ceil(
+      this.shiftPolicies.length / this.shiftPageSize
+    );
     this.updatePaginatedShiftPolicies();
   }
-}
 
-goToPreviousShiftPage() {
-  if (this.shiftCurrentPage > 1) {
-    this.shiftCurrentPage--;
-    this.updatePaginatedShiftPolicies();
+  updatePaginatedShiftPolicies() {
+    const startIndex = (this.shiftCurrentPage - 1) * this.shiftPageSize;
+    const endIndex = startIndex + this.shiftPageSize;
+    this.paginatedShiftPolicies = this.shiftPolicies.slice(startIndex, endIndex);
   }
-}
-calculateWeeklyOffPagination() {
-  this.weeklyOffTotalPages = Math.ceil(
-    this.weeklyOffPolicies.length / this.weeklyOffPageSize
-  );
-  this.updatePaginatedWeeklyOffPolicies();
-}
 
-updatePaginatedWeeklyOffPolicies() {
-  const startIndex =
-    (this.weeklyOffCurrentPage - 1) * this.weeklyOffPageSize;
-  const endIndex = startIndex + this.weeklyOffPageSize;
+  goToNextShiftPage() {
+    if (this.shiftCurrentPage < this.shiftTotalPages) {
+      this.shiftCurrentPage++;
+      this.updatePaginatedShiftPolicies();
+    }
+  }
 
-  this.paginatedWeeklyOffPolicies =
-    this.weeklyOffPolicies.slice(startIndex, endIndex);
-}
-
-goToNextWeeklyOffPage() {
-  if (this.weeklyOffCurrentPage < this.weeklyOffTotalPages) {
-    this.weeklyOffCurrentPage++;
+  goToPreviousShiftPage() {
+    if (this.shiftCurrentPage > 1) {
+      this.shiftCurrentPage--;
+      this.updatePaginatedShiftPolicies();
+    }
+  }
+  calculateWeeklyOffPagination() {
+    this.weeklyOffTotalPages = Math.ceil(
+      this.weeklyOffPolicies.length / this.weeklyOffPageSize
+    );
     this.updatePaginatedWeeklyOffPolicies();
   }
-}
 
-goToPreviousWeeklyOffPage() {
-  if (this.weeklyOffCurrentPage > 1) {
-    this.weeklyOffCurrentPage--;
-    this.updatePaginatedWeeklyOffPolicies();
+  updatePaginatedWeeklyOffPolicies() {
+    const startIndex =
+      (this.weeklyOffCurrentPage - 1) * this.weeklyOffPageSize;
+    const endIndex = startIndex + this.weeklyOffPageSize;
+
+    this.paginatedWeeklyOffPolicies =
+      this.weeklyOffPolicies.slice(startIndex, endIndex);
   }
-}
-calculateAnnouncementPagination() {
-  this.announcementTotalPages = Math.ceil(
-    this.announcements.length / this.announcementPageSize
-  );
-  this.updatePaginatedAnnouncements();
-}
 
-updatePaginatedAnnouncements() {
-  const startIndex =
-    (this.announcementCurrentPage - 1) * this.announcementPageSize;
-  const endIndex = startIndex + this.announcementPageSize;
+  goToNextWeeklyOffPage() {
+    if (this.weeklyOffCurrentPage < this.weeklyOffTotalPages) {
+      this.weeklyOffCurrentPage++;
+      this.updatePaginatedWeeklyOffPolicies();
+    }
+  }
 
-  this.paginatedAnnouncements =
-    this.announcements.slice(startIndex, endIndex);
-}
-
-goToNextAnnouncementPage() {
-  if (this.announcementCurrentPage < this.announcementTotalPages) {
-    this.announcementCurrentPage++;
+  goToPreviousWeeklyOffPage() {
+    if (this.weeklyOffCurrentPage > 1) {
+      this.weeklyOffCurrentPage--;
+      this.updatePaginatedWeeklyOffPolicies();
+    }
+  }
+  calculateAnnouncementPagination() {
+    this.announcementTotalPages = Math.ceil(
+      this.announcements.length / this.announcementPageSize
+    );
     this.updatePaginatedAnnouncements();
   }
-}
 
-goToPreviousAnnouncementPage() {
-  if (this.announcementCurrentPage > 1) {
-    this.announcementCurrentPage--;
-    this.updatePaginatedAnnouncements();
+  updatePaginatedAnnouncements() {
+    const startIndex =
+      (this.announcementCurrentPage - 1) * this.announcementPageSize;
+    const endIndex = startIndex + this.announcementPageSize;
+
+    this.paginatedAnnouncements =
+      this.announcements.slice(startIndex, endIndex);
   }
-}
-calculateBusinessUnitPagination() {
-  this.businessUnitTotalPages = Math.ceil(
-    this.businessUnits.length / this.businessUnitPageSize
-  );
-  this.updatePaginatedBusinessUnits();
-}
 
-updatePaginatedBusinessUnits() {
-  const startIndex =
-    (this.businessUnitCurrentPage - 1) * this.businessUnitPageSize;
-  const endIndex = startIndex + this.businessUnitPageSize;
+  goToNextAnnouncementPage() {
+    if (this.announcementCurrentPage < this.announcementTotalPages) {
+      this.announcementCurrentPage++;
+      this.updatePaginatedAnnouncements();
+    }
+  }
 
-  this.paginatedBusinessUnits =
-    this.businessUnits.slice(startIndex, endIndex);
-}
-
-goToNextBusinessUnitPage() {
-  if (this.businessUnitCurrentPage < this.businessUnitTotalPages) {
-    this.businessUnitCurrentPage++;
+  goToPreviousAnnouncementPage() {
+    if (this.announcementCurrentPage > 1) {
+      this.announcementCurrentPage--;
+      this.updatePaginatedAnnouncements();
+    }
+  }
+  calculateBusinessUnitPagination() {
+    this.businessUnitTotalPages = Math.ceil(
+      this.businessUnits.length / this.businessUnitPageSize
+    );
     this.updatePaginatedBusinessUnits();
   }
-}
 
-goToPreviousBusinessUnitPage() {
-  if (this.businessUnitCurrentPage > 1) {
-    this.businessUnitCurrentPage--;
-    this.updatePaginatedBusinessUnits();
+  updatePaginatedBusinessUnits() {
+    const startIndex =
+      (this.businessUnitCurrentPage - 1) * this.businessUnitPageSize;
+    const endIndex = startIndex + this.businessUnitPageSize;
+
+    this.paginatedBusinessUnits =
+      this.businessUnits.slice(startIndex, endIndex);
   }
-}
+
+  goToNextBusinessUnitPage() {
+    if (this.businessUnitCurrentPage < this.businessUnitTotalPages) {
+      this.businessUnitCurrentPage++;
+      this.updatePaginatedBusinessUnits();
+    }
+  }
+
+  goToPreviousBusinessUnitPage() {
+    if (this.businessUnitCurrentPage > 1) {
+      this.businessUnitCurrentPage--;
+      this.updatePaginatedBusinessUnits();
+    }
+  }
 }
