@@ -532,6 +532,7 @@ export class CandidateService {
     // Clear all localStorage
     localStorage.clear();
 
+    localStorage.setItem('introSeen', 'false');
     // Restore attendance data
     attendanceKeys.forEach((key) => {
       localStorage.setItem(key, attendanceData[key]);

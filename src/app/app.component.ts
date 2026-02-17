@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Candidate, CandidateService } from './services/pre-onboarding.service';
@@ -53,18 +58,21 @@ export class AppComponent implements OnInit {
     private employeeService: EmployeeService,
     private service: AdminService,
     private navCtrl: NavController,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.currentUser = this.candidateService.currentCandidate$;
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.showMenu = !event.urlAfterRedirects.includes('/login');
         this.isLoginPage = event.urlAfterRedirects.includes('/login');
-        this.iscandiateofferPage = event.urlAfterRedirects.includes('/candidate_status');
-        this.iscandiateofferLetterPage = event.urlAfterRedirects.includes('/candidate-offer-letter');
+        this.iscandiateofferPage =
+          event.urlAfterRedirects.includes('/candidate_status');
+        this.iscandiateofferLetterPage = event.urlAfterRedirects.includes(
+          '/candidate-offer-letter',
+        );
         this.userRole = this.routeGaurdService.userRole?.toLowerCase() || null;
         const role = this.userRole || '';
-        this.isAdmin = (role === 'admin' || role === 'hr');
+        this.isAdmin = role === 'admin' || role === 'hr';
         this.handlePageRefresh(event.urlAfterRedirects);
         const userData = localStorage.getItem('loggedInUser');
         if (userData) {
@@ -74,7 +82,9 @@ export class AppComponent implements OnInit {
           this.userType = null;
         }
         const introSeen = localStorage.getItem('introSeen');
-        if (!introSeen || this.isLoginPage) {
+        if (introSeen === 'false') {
+          this.showIntro = false;
+        } else if (!introSeen || this.isLoginPage) {
           this.showIntro = true;
           setTimeout(() => {
             this.showIntro = false;
@@ -86,9 +96,17 @@ export class AppComponent implements OnInit {
           this.showIntro = false;
         }
         // Fetch user department and designation from profile
-        this.employeeService.getMyProfile().subscribe(emp => {
-          this.userDesignation = (emp?.designation_name || emp?.designation || '').toLowerCase();
-          this.userDepartment = (emp?.department_name || emp?.department || '').toLowerCase();
+        this.employeeService.getMyProfile().subscribe((emp) => {
+          this.userDesignation = (
+            emp?.designation_name ||
+            emp?.designation ||
+            ''
+          ).toLowerCase();
+          this.userDepartment = (
+            emp?.department_name ||
+            emp?.department ||
+            ''
+          ).toLowerCase();
         });
       }
     });
@@ -115,7 +133,10 @@ export class AppComponent implements OnInit {
 
   shouldShowWorkTrack(): boolean {
     if (!this.isEmployeeOrManagerOrHr()) return false;
-    if (this.userDepartment && this.userDepartment.trim().toLowerCase() === 'management') {
+    if (
+      this.userDepartment &&
+      this.userDepartment.trim().toLowerCase() === 'management'
+    ) {
       return false;
     }
     return true;
@@ -123,7 +144,10 @@ export class AppComponent implements OnInit {
 
   shouldShowLeave(): boolean {
     // Hide leave for CEO
-    return !(this.userDesignation && this.userDesignation.trim().toLowerCase() === 'ceo');
+    return !(
+      this.userDesignation &&
+      this.userDesignation.trim().toLowerCase() === 'ceo'
+    );
   }
 
   isAdminOnly(): boolean {
@@ -142,7 +166,11 @@ export class AppComponent implements OnInit {
     return this.userRole === 'manager' || this.userRole === 'hr';
   }
   isEmployeeOrManagerOrHr(): boolean {
-    return this.userRole === 'employee' || this.userRole === 'manager' || this.userRole === 'hr';
+    return (
+      this.userRole === 'employee' ||
+      this.userRole === 'manager' ||
+      this.userRole === 'hr'
+    );
   }
   isEmployee(): boolean {
     return this.userRole === 'employee';
@@ -154,7 +182,9 @@ export class AppComponent implements OnInit {
     localStorage.clear();
     this.authService.logout();
     sessionStorage.clear();
-    const introSeen: boolean | null = Boolean(localStorage.getItem('introSeen'));
+    const introSeen: boolean | null = Boolean(
+      localStorage.getItem('introSeen'),
+    );
     if (!introSeen) {
       localStorage.setItem('introSeen', 'false');
     }
