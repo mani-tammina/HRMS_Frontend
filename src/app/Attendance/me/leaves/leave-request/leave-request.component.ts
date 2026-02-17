@@ -1,25 +1,12 @@
-import {
-  Component,
-  OnInit,
-  Output,
-  EventEmitter,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { IonicModule, ToastController, IonPopover } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { HeaderComponent } from '../../../../shared/header/header.component';
 import { EmployeeHeaderComponent } from '../../employee-header/employee-header.component';
 import { EmployeeLeavesService } from 'src/app/services/employee-leaves.service';
 import { LeaverequestService } from 'src/app/services/leaverequest.service';
-import { EmployeeService } from 'src/app/services/employee.service';
 
 @Component({
   selector: 'app-leave-request',
@@ -31,8 +18,8 @@ import { EmployeeService } from 'src/app/services/employee.service';
     CommonModule,
     ReactiveFormsModule,
     HeaderComponent,
-    EmployeeHeaderComponent,
-  ],
+    EmployeeHeaderComponent
+  ]
 })
 export class LeaveRequestComponent implements OnInit {
   @Output() leaveSubmitted = new EventEmitter<void>(); // Notify parent
@@ -45,12 +32,6 @@ export class LeaveRequestComponent implements OnInit {
   total_days = 0;
   wordsCount = 0;
 
-  /* ===== Employee Search (Notify) ===== */
-  searchResults: any[] = [];
-  selectedEmployees: any[] = [];
-  showDropdown = false;
-  searchQuery = '';
-
   selectedDateFrom = '';
   selectedDateTo = '';
   minDate = new Date().toISOString().split('T')[0];
@@ -62,9 +43,8 @@ export class LeaveRequestComponent implements OnInit {
     private fb: FormBuilder,
     private employeeLeaves: EmployeeLeavesService,
     private leaveRequestService: LeaverequestService,
-    private toastController: ToastController,
-    private employeeService: EmployeeService,
-  ) {}
+    private toastController: ToastController
+  ) { }
 
   ngOnInit() {
     this.buildForm();
@@ -78,21 +58,16 @@ export class LeaveRequestComponent implements OnInit {
       next: (leaves: any[]) => {
         // Always use start_date and end_date from backend, fallback to from_date/to_date if needed
         this.existingLeaves = leaves
-          .filter(
-            (l) =>
-              l.status === 'PENDING' ||
-              l.status === 'APPROVED' ||
-              l.status === 'REJECTED',
-          )
-          .map((l) => ({
+          .filter(l => l.status === 'PENDING' || l.status === 'APPROVED' || l.status === 'REJECTED')
+          .map(l => ({
             from_date: l.start_date || l.from_date,
             to_date: l.end_date || l.to_date || l.start_date || l.from_date, // fallback for single day
-            status: l.status,
+            status: l.status
           }));
       },
       error: () => {
         this.existingLeaves = [];
-      },
+      }
     });
   }
 
@@ -104,17 +79,18 @@ export class LeaveRequestComponent implements OnInit {
       start_date: ['', Validators.required],
       end_date: ['', Validators.required],
       remarks: ['', Validators.required],
-      notify: [''],
+      notify: ['']
     });
   }
 
   handleDateChanges() {
-    this.leaveForm.valueChanges.subscribe((val) => {
+    this.leaveForm.valueChanges.subscribe(val => {
       const from = val.start_date ? new Date(val.start_date) : null;
       const to = val.end_date ? new Date(val.end_date) : null;
 
       if (from && to && to >= from) {
-        const diff = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
+        const diff =
+          (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
         this.total_days = Math.floor(diff) + 1;
       } else {
         this.total_days = 0;
@@ -127,13 +103,13 @@ export class LeaveRequestComponent implements OnInit {
   loadLeaveBalance() {
     this.employeeLeaves.getLeaveBalance(this.currentYear).subscribe({
       next: (res: any[]) => {
-        this.leaveTypes = res.map((item) => ({
-          id: item.leave_type_id, // ✅ REAL BACKEND ID
+        this.leaveTypes = res.map(item => ({
+          id: item.leave_type_id,        // ✅ REAL BACKEND ID
           name: item.type_name,
           code: item.type_code,
-          available: Number(item.available_days) || 0,
+          available: Number(item.available_days) || 0
         }));
-      },
+      }
     });
   }
 
@@ -146,31 +122,23 @@ export class LeaveRequestComponent implements OnInit {
     }
 
     const form = this.leaveForm.value;
-    const selectedLeave = this.leaveTypes.find((l) => l.id === form.leave_type);
+    const selectedLeave = this.leaveTypes.find(l => l.id === form.leave_type);
     if (!selectedLeave) {
       this.presentToast('Invalid leave type', 'danger');
       return;
     }
     if (this.total_days > selectedLeave.available) {
-      this.presentToast(
-        `Only ${selectedLeave.available} days available`,
-        'warning',
-      );
+      this.presentToast(`Only ${selectedLeave.available} days available`, 'warning');
       return;
     }
+
 
     // Check if any date in the new request is already taken (pending, approved, or rejected)
     const normalize = (date: any) => {
       if (!date) return '';
       if (typeof date === 'string' && date.length === 10) return date; // already YYYY-MM-DD
       const d = new Date(date);
-      return (
-        d.getFullYear() +
-        '-' +
-        String(d.getMonth() + 1).padStart(2, '0') +
-        '-' +
-        String(d.getDate()).padStart(2, '0')
-      );
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     };
 
     const newFrom = new Date(form.start_date);
@@ -181,11 +149,7 @@ export class LeaveRequestComponent implements OnInit {
       for (const l of this.existingLeaves) {
         const lFrom = new Date(l.from_date);
         const lTo = new Date(l.to_date);
-        for (
-          let ld = new Date(lFrom);
-          ld <= lTo;
-          ld.setDate(ld.getDate() + 1)
-        ) {
+        for (let ld = new Date(lFrom); ld <= lTo; ld.setDate(ld.getDate() + 1)) {
           const ldStr = normalize(ld);
           // Debug log for troubleshooting
           // console.log('Comparing', dStr, 'with', ldStr, 'status:', l.status);
@@ -199,10 +163,7 @@ export class LeaveRequestComponent implements OnInit {
       if (dateConflict) break;
     }
     if (dateConflict) {
-      this.presentToast(
-        'A leave request already exists for at least one of these dates. Duplicate leave requests are not allowed.',
-        'danger',
-      );
+      this.presentToast('A leave request already exists for at least one of these dates. Duplicate leave requests are not allowed.', 'danger');
       return;
     }
 
@@ -211,7 +172,7 @@ export class LeaveRequestComponent implements OnInit {
       start_date: form.start_date,
       end_date: form.end_date,
       total_days: this.total_days,
-      reason: form.remarks,
+      reason: form.remarks
     };
 
     this.leaveRequestService.applyLeave(payload).subscribe({
@@ -227,10 +188,10 @@ export class LeaveRequestComponent implements OnInit {
       error: (err) => {
         this.presentToast(
           err?.error?.error || 'Failed to submit leave',
-          'danger',
+          'danger'
         );
         this.loadPendingLeaves(); // Always refresh leaves after error too
-      },
+      }
     });
   }
 
@@ -243,18 +204,21 @@ export class LeaveRequestComponent implements OnInit {
 
     if (words.length > 100) {
       this.leaveForm.patchValue({
-        remarks: words.slice(0, 100).join(' '),
+        remarks: words.slice(0, 100).join(' ')
       });
       this.wordsCount = 100;
     }
   }
 
-  async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
+  async presentToast(
+    message: string,
+    color: 'success' | 'danger' | 'warning'
+  ) {
     const toast = await this.toastController.create({
       message,
       duration: 2000,
       color,
-      position: 'top',
+      position: 'top'
     });
     toast.present();
   }
@@ -269,61 +233,5 @@ export class LeaveRequestComponent implements OnInit {
     this.leaveForm.patchValue({ end_date: event.detail.value });
     this.selectedDateTo = event.detail.value;
     popover.dismiss();
-  }
-
-  /* ================= EMPLOYEE SEARCH (NOTIFY) ================= */
-
-  onNotifySearch(event: any) {
-    const query = (event.detail?.value ?? event.target?.value ?? '').trim();
-    this.searchQuery = query;
-
-    if (query.length < 2) {
-      this.searchResults = [];
-      this.showDropdown = false;
-      return;
-    }
-
-    this.employeeService.searchEmployees(query).subscribe({
-      next: (results: any[]) => {
-        // Filter out already-selected employees
-        const selectedIds = new Set(this.selectedEmployees.map((e) => e.id));
-        this.searchResults = results.filter((r) => !selectedIds.has(r.id));
-        this.showDropdown = this.searchResults.length > 0;
-      },
-      error: () => {
-        this.searchResults = [];
-        this.showDropdown = false;
-      },
-    });
-  }
-
-  selectEmployee(employee: any) {
-    // Avoid duplicates
-    if (!this.selectedEmployees.find((e) => e.id === employee.id)) {
-      this.selectedEmployees.push(employee);
-    }
-    // Update form control with comma-separated IDs
-    this.leaveForm.patchValue({
-      notify: this.selectedEmployees.map((e) => e.id).join(','),
-    });
-    this.searchQuery = '';
-    this.searchResults = [];
-    this.showDropdown = false;
-  }
-
-  removeEmployee(employee: any) {
-    this.selectedEmployees = this.selectedEmployees.filter(
-      (e) => e.id !== employee.id,
-    );
-    this.leaveForm.patchValue({
-      notify: this.selectedEmployees.map((e) => e.id).join(',') || '',
-    });
-  }
-
-  hideDropdown() {
-    // Small delay so click on dropdown item registers first
-    setTimeout(() => {
-      this.showDropdown = false;
-    }, 200);
   }
 }

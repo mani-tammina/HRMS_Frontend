@@ -159,11 +159,12 @@ export class MyTeamPage implements OnInit, OnDestroy {
     // Use getMyTeamList for ALL roles - server handles manager vs employee logic
     this.employeeService.getMyTeamList().subscribe({
       next: (res: any) => {
-        console.log('✅ My Team API Response:', res);
 
         // Handle different response formats
         if (res?.team) {
           this.teamMembers = res.team;
+        console.log('✅ My Team API Response:', this.teamMembers);
+
         } else if (Array.isArray(res)) {
           this.teamMembers = res;
         } else {
@@ -171,6 +172,7 @@ export class MyTeamPage implements OnInit, OnDestroy {
         }
 
         this.filteredMembers = [...this.teamMembers];
+        console.log('✅ Team Members:', this.filteredMembers);
         console.log('✅ Team Members Count:', this.teamMembers.length);
         console.log('✅ Team Type:', res?.type || 'unknown');
 
@@ -210,27 +212,12 @@ export class MyTeamPage implements OnInit, OnDestroy {
         console.log('✅ On Leave Today:', this.onLeaveToday);
         console.log('✅ Summary:', this.attendanceSummary);
 
-        // Merge team members with their attendance data
-        this.teamMembers = teamMembersData.map((member: any) => {
-          // Find attendance record for this member
+        // Merge attendance data into existing team members (preserves all original fields like location_name, department_name, etc.)
+        this.teamMembers = this.teamMembers.map((member: any) => {
           const attendanceRecord = this.attendanceData.find((att: any) => att.employee_id === member.id);
 
           return {
-            id: member.id,
-            EmployeeNumber: member.EmployeeNumber,
-            FullName: `${member.FirstName} ${member.LastName}`,
-            full_name: `${member.FirstName} ${member.LastName}`,
-            FirstName: member.FirstName,
-            LastName: member.LastName,
-            WorkEmail: member.WorkEmail,
-            work_email: member.WorkEmail,
-            department: member.department,
-            department_name: member.department_name,
-            designation: member.designation,
-            designation_name: member.designation_name,
-            profile_image: member.profile_image,
-            EmploymentStatus: member.EmploymentStatus,
-            // Add attendance info
+            ...member,
             attendance: attendanceRecord ? {
               status: attendanceRecord.status || 'present',
               attendance: {
@@ -252,8 +239,9 @@ export class MyTeamPage implements OnInit, OnDestroy {
         console.log('✅ First mapped member:', this.teamMembers[0]);
 
         this.applyAttendanceFilter();
-        console.log('✅ Filtered Members after filter:', this.filteredMembers.length);
-        console.log('✅ Current filter:', this.attendanceFilter);
+        
+        // Match real-time status immediately if viewing today
+        this.syncRealTimeStatusToTeamMembers();
 
         this.loading = false;
       },
@@ -269,6 +257,11 @@ export class MyTeamPage implements OnInit, OnDestroy {
   onDateChange(event: any) {
     this.selectedDate = event.detail.value.split('T')[0];
     this.loadAttendanceData();
+  }
+
+  isToday(): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.selectedDate === today;
   }
 
   /* ================= TOGGLE ATTENDANCE VIEW ================= */
@@ -428,6 +421,8 @@ export class MyTeamPage implements OnInit, OnDestroy {
             };
           });
 
+          this.syncRealTimeStatusToTeamMembers();
+
           console.log('\n✅ Final Employee Status Map:', JSON.stringify(this.employeeStatusMap, null, 2));
           console.log('📊 Total employees in map:', Object.keys(this.employeeStatusMap).length);
         } else {
@@ -465,6 +460,55 @@ export class MyTeamPage implements OnInit, OnDestroy {
     } catch (e) {
       return '—';
     }
+  }
+
+  /* ================= SYNC STATUS HELPER ================= */
+
+  private syncRealTimeStatusToTeamMembers(): void {
+    if (!this.isToday() || !this.teamMembers.length) return;
+
+    console.log('🔄 Syncing real-time punch status to team members list...');
+    this.teamMembers.forEach(member => {
+      const realTime = this.employeeStatusMap[member.id];
+      if (realTime && realTime.status === 'in') {
+        if (!member.attendance) {
+          member.attendance = { status: 'absent', attendance: null };
+        }
+        
+        // If they are clocked in but report says 'absent', force 'present'
+        if (member.attendance.status === 'absent') {
+          console.log(`📍 Correcting status for ${member.FullName}: Absent -> Present (Real-time IN)`);
+          member.attendance.status = 'present';
+        }
+        
+        // Also sync work_mode for the ribbon if missing
+        if (realTime.work_mode && (!member.attendance.attendance || !member.attendance.attendance.work_mode)) {
+          if (!member.attendance.attendance) member.attendance.attendance = {};
+          member.attendance.attendance.work_mode = realTime.work_mode;
+        }
+      }
+    });
+
+    // ✅ Recalculate summary counts to reflect real-time changes
+    if (this.attendanceSummary) {
+      let presentCount = 0;
+      let absentCount = 0;
+      let leaveCount = 0;
+
+      this.teamMembers.forEach(m => {
+        const s = m.attendance?.status || 'absent';
+        if (s === 'present') presentCount++;
+        else if (s === 'on_leave') leaveCount++;
+        else absentCount++;
+      });
+
+      this.attendanceSummary.present = presentCount;
+      this.attendanceSummary.absent = absentCount;
+      this.attendanceSummary.on_leave = leaveCount;
+      this.attendanceSummary.total_team = this.teamMembers.length;
+    }
+    
+    this.applyAttendanceFilter();
   }
 
   /* ================= MANUAL REFRESH ================= */

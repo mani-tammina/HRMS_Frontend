@@ -1,12 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  AdminService,
-  ShiftPolicyPayload,
-} from 'src/app/services/admin-functionality/admin.service.service';
+import { AdminService, ShiftPolicyPayload } from 'src/app/services/admin-functionality/admin.service.service';
 import { IonicModule } from '@ionic/angular';
 import { Router } from '@angular/router';
+
 
 import { RouteGuardService } from 'src/app/services/route-guard/route-service/route-guard.service';
 
@@ -15,8 +13,9 @@ import { RouteGuardService } from 'src/app/services/route-guard/route-service/ro
   standalone: true,
   imports: [FormsModule, CommonModule, IonicModule],
   templateUrl: './admin-functionality.component.html',
-  styleUrls: ['./admin-functionality.component.scss'],
+  styleUrls: ['./admin-functionality.component.scss']
 })
+
 export class adminFunctionalityComponent implements OnInit {
   userRole: string | null = null;
   get isAdminOrHR(): boolean {
@@ -39,7 +38,7 @@ export class adminFunctionalityComponent implements OnInit {
     is_payable: 0,
     holiday_overlap_rule: '',
     sandwich_rule: 0,
-    minimum_work_days: 0,
+    minimum_work_days: 0
   };
   editingWeeklyOffPolicyId: number | null = null;
 
@@ -52,9 +51,9 @@ export class adminFunctionalityComponent implements OnInit {
   businessUnits: any[] = [];
   businessUnitName: string = '';
   editingBusinessUnitId: number | null = null;
-  businessUnitNameTouched: boolean = false;
 
-  // Pagination
+
+    // Pagination
   deptcurrentPage = 1;
   deptpageSize = 5;
   depttotalPages = 0;
@@ -111,31 +110,24 @@ export class adminFunctionalityComponent implements OnInit {
     break_duration_minutes: 60,
     timezone: 'Asia/Kolkata',
     description: '',
-    is_active: 1,
+    is_active: 1
   };
 
   announcementForm = {
     title: '',
     body: '',
     starts_at: '',
-    ends_at: '',
+    ends_at: ''
   };
 
   designationName: string = '';
   editingDesignationId: number | null = null;
 
-  constructor(
-    private service: AdminService,
-    private router: Router,
-    private routeGaurdService: RouteGuardService,
-  ) {}
+  constructor(private service: AdminService, private router: Router, private routeGaurdService: RouteGuardService) { }
 
   ngOnInit() {
     // Try to get userRole from routeGaurdService, fallback to localStorage
-    this.userRole =
-      this.routeGaurdService.userRole?.toLowerCase() ||
-      localStorage.getItem('userRole')?.toLowerCase() ||
-      null;
+    this.userRole = (this.routeGaurdService.userRole?.toLowerCase() || localStorage.getItem('userRole')?.toLowerCase() || null);
     this.loadLocations();
   }
   adminManagement() {
@@ -157,41 +149,17 @@ export class adminFunctionalityComponent implements OnInit {
     }
   }
   /* WEEKLY OFF POLICIES */
-  loadWeeklyOffPolicies() {
-    this.service.getWeeklyOffPolicies().subscribe((r) => {
-      this.weeklyOffPolicies = r || [];
-      this.weeklyOffCurrentPage = 1;
-      this.calculateWeeklyOffPagination();
-    });
+  loadWeeklyOffPolicies() { 
+    this.service.getWeeklyOffPolicies().subscribe(r => {
+    this.weeklyOffPolicies = r || [];
+    this.weeklyOffCurrentPage = 1;
+    this.calculateWeeklyOffPagination();
+  });
   }
-  saveWeeklyOffPolicy() {
-    this.service
-      .createWeeklyOffPolicy(this.weeklyOffPolicyForm)
-      .subscribe(() => {
-        this.loadWeeklyOffPolicies();
-        this.cancelWeeklyOffPolicy();
-      });
-  }
-  editWeeklyOffPolicy(item: any) {
-    this.editingWeeklyOffPolicyId = item.id;
-    this.weeklyOffPolicyForm = { ...item };
-  }
-  updateWeeklyOffPolicy() {
-    this.service
-      .updateWeeklyOffPolicy(
-        this.editingWeeklyOffPolicyId!,
-        this.weeklyOffPolicyForm,
-      )
-      .subscribe(() => {
-        this.loadWeeklyOffPolicies();
-        this.cancelWeeklyOffPolicy();
-      });
-  }
-  deleteWeeklyOffPolicy(id: number) {
-    this.service
-      .deleteWeeklyOffPolicy(id)
-      .subscribe(() => this.loadWeeklyOffPolicies());
-  }
+  saveWeeklyOffPolicy() { this.service.createWeeklyOffPolicy(this.weeklyOffPolicyForm).subscribe(() => { this.loadWeeklyOffPolicies(); this.cancelWeeklyOffPolicy(); }); }
+  editWeeklyOffPolicy(item: any) { this.editingWeeklyOffPolicyId = item.id; this.weeklyOffPolicyForm = { ...item }; }
+  updateWeeklyOffPolicy() { this.service.updateWeeklyOffPolicy(this.editingWeeklyOffPolicyId!, this.weeklyOffPolicyForm).subscribe(() => { this.loadWeeklyOffPolicies(); this.cancelWeeklyOffPolicy(); }); }
+  deleteWeeklyOffPolicy(id: number) { this.service.deleteWeeklyOffPolicy(id).subscribe(() => this.loadWeeklyOffPolicies()); }
   cancelWeeklyOffPolicy() {
     this.editingWeeklyOffPolicyId = null;
     this.weeklyOffPolicyForm = {
@@ -210,110 +178,49 @@ export class adminFunctionalityComponent implements OnInit {
       is_payable: 0,
       holiday_overlap_rule: '',
       sandwich_rule: 0,
-      minimum_work_days: 0,
+      minimum_work_days: 0
     };
   }
 
   /* LOCATIONS */
-  loadLocations() {
-    this.service.getLocations().subscribe((r) => {
-      this.locations = r || [];
-      this.currentLocationPage = 1;
-      this.calculateLocationPagination();
-    });
+  loadLocations() { 
+    this.service.getLocations().subscribe(r => {
+    this.locations = r || [];
+    this.currentLocationPage = 1;
+    this.calculateLocationPagination();
+  }); 
   }
-  openAddLocation() {
-    this.showLocationForm = true;
-    this.editingLocationId = null;
-    this.locationName = '';
-  }
-  saveLocation() {
-    this.service.createLocation({ name: this.locationName }).subscribe(() => {
-      this.loadLocations();
-      this.locationName = '';
-      this.cancelLocation();
-    });
-  }
-  editLocation(i: any) {
-    this.showLocationForm = true;
-    this.locationName = i.name;
-    this.editingLocationId = i.id;
-  }
-  updateLocation() {
-    this.service
-      .updateLocation(this.editingLocationId!, { name: this.locationName })
-      .subscribe(() => {
-        this.loadLocations();
-        this.locationName = '';
-        this.cancelLocation();
-      });
-  }
-  deleteLocation(id: number) {
-    this.service.deleteLocation(id).subscribe(() => this.loadLocations());
-  }
-  cancelLocation() {
-    this.locationName = '';
-    this.editingLocationId = null;
-  }
+  openAddLocation() { this.showLocationForm = true; this.editingLocationId = null; this.locationName = ''; }
+  saveLocation() { this.service.createLocation({ name: this.locationName }).subscribe(() => { this.loadLocations(); this.locationName = ''; this.cancelLocation(); }); }
+  editLocation(i: any) { this.showLocationForm = true; this.locationName = i.name; this.editingLocationId = i.id; }
+  updateLocation() { this.service.updateLocation(this.editingLocationId!, { name: this.locationName }).subscribe(() => { this.loadLocations(); this.locationName = ''; this.cancelLocation(); }); }
+  deleteLocation(id: number) { this.service.deleteLocation(id).subscribe(() => this.loadLocations()); }
+  cancelLocation() { this.locationName = ''; this.editingLocationId = null; }
 
   /* DEPARTMENTS */
-  loadDepartments() {
-    this.service.getDepartments().subscribe((r) => {
-      this.departments = r || [];
-      this.deptcurrentPage = 1;
-      this.calculatedeptPagination();
-    });
+  loadDepartments() { 
+    this.service.getDepartments().subscribe(r => {
+    this.departments = r || [];
+    this.deptcurrentPage = 1;
+    this.calculatedeptPagination();
+  });
   }
-  openAddDepartment() {
-    this.showDepartmentForm = true;
-    this.editingDepartmentId = null;
-    this.departmentName = '';
-  }
-  saveDepartment() {
-    this.service
-      .createDepartment({ name: this.departmentName })
-      .subscribe(() => {
-        this.loadDepartments();
-        this.departmentName = '';
-        this.cancelDepartment();
-      });
-  }
-  editDepartment(i: any) {
-    this.showDepartmentForm = true;
-    this.departmentName = i.name;
-    this.editingDepartmentId = i.id;
-  }
-  updateDepartment() {
-    this.service
-      .updateDepartment(this.editingDepartmentId!, {
-        name: this.departmentName,
-      })
-      .subscribe(() => {
-        this.loadDepartments();
-        this.departmentName = '';
-        this.cancelDepartment();
-      });
-  }
-  deleteDepartment(id: number) {
-    this.service.deleteDepartment(id).subscribe(() => this.loadDepartments());
-  }
-  cancelDepartment() {
-    this.departmentName = '';
-    this.editingDepartmentId = null;
-  }
+  openAddDepartment() { this.showDepartmentForm = true; this.editingDepartmentId = null; this.departmentName = ''; }
+  saveDepartment() { this.service.createDepartment({ name: this.departmentName }).subscribe(() => { this.loadDepartments(); this.departmentName = ''; this.cancelDepartment(); }); }
+  editDepartment(i: any) { this.showDepartmentForm = true; this.departmentName = i.name; this.editingDepartmentId = i.id; }
+  updateDepartment() { this.service.updateDepartment(this.editingDepartmentId!, { name: this.departmentName }).subscribe(() => { this.loadDepartments(); this.departmentName = ''; this.cancelDepartment(); }); }
+  deleteDepartment(id: number) { this.service.deleteDepartment(id).subscribe(() => this.loadDepartments()); }
+  cancelDepartment() { this.departmentName = ''; this.editingDepartmentId = null; }
 
   /* SHIFTS */
-  loadShiftPolicies() {
-    this.service.getShiftPolicies().subscribe((r) => {
-      this.shiftPolicies = r || [];
-      this.shiftCurrentPage = 1;
-      this.calculateShiftPagination();
-    });
-  }
-  openAddShift() {
-    this.showShiftForm = true;
-    this.editingShiftId = null;
-  }
+  loadShiftPolicies() { 
+    this.service.getShiftPolicies().subscribe(r => {
+    this.shiftPolicies = r || [];
+    this.shiftCurrentPage = 1;
+    this.calculateShiftPagination();
+  });
+   }
+  openAddShift() { this.showShiftForm = true; this.editingShiftId = null; }
   saveShift() {
     console.log('Saving new shift:', this.shiftForm);
     this.service.createShiftPolicy(this.shiftForm).subscribe({
@@ -324,7 +231,7 @@ export class adminFunctionalityComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error saving shift:', err);
-      },
+      }
     });
   }
   // Removed duplicate editShift without debug logs
@@ -337,23 +244,18 @@ export class adminFunctionalityComponent implements OnInit {
   // Removed duplicate updateShift without debug logs
   updateShift() {
     console.log('Updating shift:', this.editingShiftId, this.shiftForm);
-    this.service
-      .updateShiftPolicy(this.editingShiftId!, this.shiftForm)
-      .subscribe({
-        next: () => {
-          console.log('Shift updated successfully');
-          this.loadShiftPolicies();
-          this.resetShiftForm();
-        },
-        error: (err) => {
-          console.error('Error updating shift:', err);
-        },
-      });
+    this.service.updateShiftPolicy(this.editingShiftId!, this.shiftForm).subscribe({
+      next: () => {
+        console.log('Shift updated successfully');
+        this.loadShiftPolicies();
+        this.resetShiftForm();
+      },
+      error: (err) => {
+        console.error('Error updating shift:', err);
+      }
+    });
   }
-  cancelShift() {
-    this.resetShiftForm();
-    this.editingShiftId = null;
-  }
+  cancelShift() { this.resetShiftForm(); this.editingShiftId = null; }
   resetShiftForm() {
     this.shiftForm = {
       name: '',
@@ -363,62 +265,36 @@ export class adminFunctionalityComponent implements OnInit {
       break_duration_minutes: 60,
       timezone: 'Asia/Kolkata',
       description: '',
-      is_active: 1,
+      is_active: 1
     };
   }
 
   /* ANNOUNCEMENTS */
-  loadAnnouncements() {
-    this.service.getAnnouncements().subscribe((r) => {
-      this.announcements = r || [];
-      this.announcementCurrentPage = 1;
-      this.calculateAnnouncementPagination();
-    });
-  }
-  openAddAnnouncement() {
-    this.showAnnouncementForm = true;
-    this.editingAnnouncementId = null;
-    this.announcementForm = { title: '', body: '', starts_at: '', ends_at: '' };
-  }
-  saveAnnouncement() {
-    this.service.createAnnouncement(this.announcementForm).subscribe(() => {
-      this.loadAnnouncements();
-      this.cancelAnnouncement();
-    });
-  }
-  editAnnouncement(i: any) {
-    this.showAnnouncementForm = true;
-    this.editingAnnouncementId = i.id;
-    this.announcementForm = { ...i };
-  }
-  updateAnnouncement() {
-    this.service
-      .updateAnnouncement(this.editingAnnouncementId!, this.announcementForm)
-      .subscribe(() => {
-        this.loadAnnouncements();
-        this.cancelAnnouncement();
-      });
-  }
-  deleteAnnouncement(id: number) {
-    this.service
-      .deleteAnnouncement(id)
-      .subscribe(() => this.loadAnnouncements());
-  }
-  cancelAnnouncement() {
-    this.showAnnouncementForm = false;
-  }
+  loadAnnouncements() { 
+    this.service.getAnnouncements().subscribe(r => {
+    this.announcements = r || [];
+    this.announcementCurrentPage = 1;
+    this.calculateAnnouncementPagination();
+  });
+   }
+  openAddAnnouncement() { this.showAnnouncementForm = true; this.editingAnnouncementId = null; this.announcementForm = { title: '', body: '', starts_at: '', ends_at: '' }; }
+  saveAnnouncement() { this.service.createAnnouncement(this.announcementForm).subscribe(() => { this.loadAnnouncements(); this.cancelAnnouncement(); }); }
+  editAnnouncement(i: any) { this.showAnnouncementForm = true; this.editingAnnouncementId = i.id; this.announcementForm = { ...i }; }
+  updateAnnouncement() { this.service.updateAnnouncement(this.editingAnnouncementId!, this.announcementForm).subscribe(() => { this.loadAnnouncements(); this.cancelAnnouncement(); }); }
+  deleteAnnouncement(id: number) { this.service.deleteAnnouncement(id).subscribe(() => this.loadAnnouncements()); }
+  cancelAnnouncement() { this.showAnnouncementForm = false; }
 
   /* DESIGNATIONS */
   getDesignations() {
     this.service.getDesignations().subscribe(
       (data) => {
-        this.designations = data || [];
+        this.designations = data ||[];
         this.designationCurrentPage = 1;
         this.calculateDesignationPagination();
       },
       (error) => {
         console.error('Error fetching designations:', error);
-      },
+      }
     );
   }
 
@@ -432,7 +308,7 @@ export class adminFunctionalityComponent implements OnInit {
       },
       (error) => {
         console.error('Error creating designation:', error);
-      },
+      }
     );
   }
 
@@ -444,18 +320,16 @@ export class adminFunctionalityComponent implements OnInit {
   updateDesignation() {
     const payload = { name: this.designationName };
     if (this.editingDesignationId) {
-      this.service
-        .updateDesignation(this.editingDesignationId, payload)
-        .subscribe(
-          (response) => {
-            console.log('Designation updated:', response);
-            this.getDesignations();
-            this.cancelDesignation();
-          },
-          (error) => {
-            console.error('Error updating designation:', error);
-          },
-        );
+      this.service.updateDesignation(this.editingDesignationId, payload).subscribe(
+        (response) => {
+          console.log('Designation updated:', response);
+          this.getDesignations();
+          this.cancelDesignation();
+        },
+        (error) => {
+          console.error('Error updating designation:', error);
+        }
+      );
     }
   }
 
@@ -467,7 +341,7 @@ export class adminFunctionalityComponent implements OnInit {
       },
       (error) => {
         console.error('Error deleting designation:', error);
-      },
+      }
     );
   }
 
@@ -489,14 +363,12 @@ export class adminFunctionalityComponent implements OnInit {
       },
       (error) => {
         console.error('Error fetching business units:', error);
-      },
+      }
     );
   }
 
   saveBusinessUnit() {
-    this.businessUnitNameTouched = true;
-    if (!this.businessUnitName || !this.businessUnitName.trim()) return;
-    const payload = { name: this.businessUnitName.trim() };
+    const payload = { name: this.businessUnitName };
     this.service.createBusinessUnit(payload).subscribe(
       () => {
         this.loadBusinessUnits();
@@ -505,7 +377,7 @@ export class adminFunctionalityComponent implements OnInit {
       },
       (error) => {
         console.error('Error creating business unit:', error);
-      },
+      }
     );
   }
 
@@ -515,21 +387,17 @@ export class adminFunctionalityComponent implements OnInit {
   }
 
   updateBusinessUnit() {
-    this.businessUnitNameTouched = true;
-    if (!this.businessUnitName || !this.businessUnitName.trim()) return;
-    const payload = { name: this.businessUnitName.trim() };
+    const payload = { name: this.businessUnitName };
     if (this.editingBusinessUnitId) {
-      this.service
-        .updateBusinessUnit(this.editingBusinessUnitId, payload)
-        .subscribe(
-          () => {
-            this.loadBusinessUnits();
-            this.cancelBusinessUnit();
-          },
-          (error) => {
-            console.error('Error updating business unit:', error);
-          },
-        );
+      this.service.updateBusinessUnit(this.editingBusinessUnitId, payload).subscribe(
+        () => {
+          this.loadBusinessUnits();
+          this.cancelBusinessUnit();
+        },
+        (error) => {
+          console.error('Error updating business unit:', error);
+        }
+      );
     }
   }
 
@@ -540,14 +408,13 @@ export class adminFunctionalityComponent implements OnInit {
       },
       (error) => {
         console.error('Error deleting business unit:', error);
-      },
+      }
     );
   }
 
   cancelBusinessUnit() {
     this.businessUnitName = '';
     this.editingBusinessUnitId = null;
-    this.businessUnitNameTouched = false;
   }
 
   openAddBusinessUnit() {
@@ -557,206 +424,194 @@ export class adminFunctionalityComponent implements OnInit {
     this.loadBusinessUnits();
   }
 
-  calculatedeptPagination() {
-    this.depttotalPages = Math.ceil(
-      this.departments.length / this.deptpageSize,
-    );
+calculatedeptPagination() {
+  this.depttotalPages = Math.ceil(this.departments.length / this.deptpageSize);
+  this.updatePaginatedDepartments();
+}
+
+updatePaginatedDepartments() {
+  const startIndex = (this.deptcurrentPage - 1) * this.deptpageSize;
+  const endIndex = startIndex + this.deptpageSize;
+  this.paginatedDepartments = this.departments.slice(startIndex, endIndex);
+}
+
+goToNextdeptPage() {
+  if (this.deptcurrentPage < this.depttotalPages) {
+    this.deptcurrentPage++;
     this.updatePaginatedDepartments();
   }
+}
 
-  updatePaginatedDepartments() {
-    const startIndex = (this.deptcurrentPage - 1) * this.deptpageSize;
-    const endIndex = startIndex + this.deptpageSize;
-    this.paginatedDepartments = this.departments.slice(startIndex, endIndex);
+goToPreviousdeptPage() {
+  if (this.deptcurrentPage > 1) {
+    this.deptcurrentPage--;
+    this.updatePaginatedDepartments();
   }
+}
 
-  goToNextdeptPage() {
-    if (this.deptcurrentPage < this.depttotalPages) {
-      this.deptcurrentPage++;
-      this.updatePaginatedDepartments();
-    }
-  }
+calculateLocationPagination() {
+  this.totalLocationPages = Math.ceil(this.locations.length / this.locationPageSize);
+  this.updatePaginatedLocations();
+}
 
-  goToPreviousdeptPage() {
-    if (this.deptcurrentPage > 1) {
-      this.deptcurrentPage--;
-      this.updatePaginatedDepartments();
-    }
-  }
+updatePaginatedLocations() {
+  const startIndex = (this.currentLocationPage - 1) * this.locationPageSize;
+  const endIndex = startIndex + this.locationPageSize;
+  this.paginatedLocations = this.locations.slice(startIndex, endIndex);
+}
 
-  calculateLocationPagination() {
-    this.totalLocationPages = Math.ceil(
-      this.locations.length / this.locationPageSize,
-    );
+goToNextLocationPage() {
+  if (this.currentLocationPage < this.totalLocationPages) {
+    this.currentLocationPage++;
     this.updatePaginatedLocations();
   }
+}
 
-  updatePaginatedLocations() {
-    const startIndex = (this.currentLocationPage - 1) * this.locationPageSize;
-    const endIndex = startIndex + this.locationPageSize;
-    this.paginatedLocations = this.locations.slice(startIndex, endIndex);
+goToPreviousLocationPage() {
+  if (this.currentLocationPage > 1) {
+    this.currentLocationPage--;
+    this.updatePaginatedLocations();
   }
+}
+calculateDesignationPagination() {
+  this.designationTotalPages = Math.ceil(
+    this.designations.length / this.designationPageSize
+  );
+  this.updatePaginatedDesignations();
+}
 
-  goToNextLocationPage() {
-    if (this.currentLocationPage < this.totalLocationPages) {
-      this.currentLocationPage++;
-      this.updatePaginatedLocations();
-    }
-  }
+updatePaginatedDesignations() {
+  const startIndex =
+    (this.designationCurrentPage - 1) * this.designationPageSize;
+  const endIndex = startIndex + this.designationPageSize;
 
-  goToPreviousLocationPage() {
-    if (this.currentLocationPage > 1) {
-      this.currentLocationPage--;
-      this.updatePaginatedLocations();
-    }
-  }
-  calculateDesignationPagination() {
-    this.designationTotalPages = Math.ceil(
-      this.designations.length / this.designationPageSize,
-    );
+  this.paginatedDesignations = this.designations.slice(startIndex, endIndex);
+}
+
+goToNextDesignationPage() {
+  if (this.designationCurrentPage < this.designationTotalPages) {
+    this.designationCurrentPage++;
     this.updatePaginatedDesignations();
   }
+}
 
-  updatePaginatedDesignations() {
-    const startIndex =
-      (this.designationCurrentPage - 1) * this.designationPageSize;
-    const endIndex = startIndex + this.designationPageSize;
-
-    this.paginatedDesignations = this.designations.slice(startIndex, endIndex);
+goToPreviousDesignationPage() {
+  if (this.designationCurrentPage > 1) {
+    this.designationCurrentPage--;
+    this.updatePaginatedDesignations();
   }
+}
+calculateShiftPagination() {
+  this.shiftTotalPages = Math.ceil(
+    this.shiftPolicies.length / this.shiftPageSize
+  );
+  this.updatePaginatedShiftPolicies();
+}
 
-  goToNextDesignationPage() {
-    if (this.designationCurrentPage < this.designationTotalPages) {
-      this.designationCurrentPage++;
-      this.updatePaginatedDesignations();
-    }
-  }
+updatePaginatedShiftPolicies() {
+  const startIndex = (this.shiftCurrentPage - 1) * this.shiftPageSize;
+  const endIndex = startIndex + this.shiftPageSize;
+  this.paginatedShiftPolicies = this.shiftPolicies.slice(startIndex, endIndex);
+}
 
-  goToPreviousDesignationPage() {
-    if (this.designationCurrentPage > 1) {
-      this.designationCurrentPage--;
-      this.updatePaginatedDesignations();
-    }
-  }
-  calculateShiftPagination() {
-    this.shiftTotalPages = Math.ceil(
-      this.shiftPolicies.length / this.shiftPageSize,
-    );
+goToNextShiftPage() {
+  if (this.shiftCurrentPage < this.shiftTotalPages) {
+    this.shiftCurrentPage++;
     this.updatePaginatedShiftPolicies();
   }
+}
 
-  updatePaginatedShiftPolicies() {
-    const startIndex = (this.shiftCurrentPage - 1) * this.shiftPageSize;
-    const endIndex = startIndex + this.shiftPageSize;
-    this.paginatedShiftPolicies = this.shiftPolicies.slice(
-      startIndex,
-      endIndex,
-    );
+goToPreviousShiftPage() {
+  if (this.shiftCurrentPage > 1) {
+    this.shiftCurrentPage--;
+    this.updatePaginatedShiftPolicies();
   }
+}
+calculateWeeklyOffPagination() {
+  this.weeklyOffTotalPages = Math.ceil(
+    this.weeklyOffPolicies.length / this.weeklyOffPageSize
+  );
+  this.updatePaginatedWeeklyOffPolicies();
+}
 
-  goToNextShiftPage() {
-    if (this.shiftCurrentPage < this.shiftTotalPages) {
-      this.shiftCurrentPage++;
-      this.updatePaginatedShiftPolicies();
-    }
-  }
+updatePaginatedWeeklyOffPolicies() {
+  const startIndex =
+    (this.weeklyOffCurrentPage - 1) * this.weeklyOffPageSize;
+  const endIndex = startIndex + this.weeklyOffPageSize;
 
-  goToPreviousShiftPage() {
-    if (this.shiftCurrentPage > 1) {
-      this.shiftCurrentPage--;
-      this.updatePaginatedShiftPolicies();
-    }
-  }
-  calculateWeeklyOffPagination() {
-    this.weeklyOffTotalPages = Math.ceil(
-      this.weeklyOffPolicies.length / this.weeklyOffPageSize,
-    );
+  this.paginatedWeeklyOffPolicies =
+    this.weeklyOffPolicies.slice(startIndex, endIndex);
+}
+
+goToNextWeeklyOffPage() {
+  if (this.weeklyOffCurrentPage < this.weeklyOffTotalPages) {
+    this.weeklyOffCurrentPage++;
     this.updatePaginatedWeeklyOffPolicies();
   }
+}
 
-  updatePaginatedWeeklyOffPolicies() {
-    const startIndex = (this.weeklyOffCurrentPage - 1) * this.weeklyOffPageSize;
-    const endIndex = startIndex + this.weeklyOffPageSize;
-
-    this.paginatedWeeklyOffPolicies = this.weeklyOffPolicies.slice(
-      startIndex,
-      endIndex,
-    );
+goToPreviousWeeklyOffPage() {
+  if (this.weeklyOffCurrentPage > 1) {
+    this.weeklyOffCurrentPage--;
+    this.updatePaginatedWeeklyOffPolicies();
   }
+}
+calculateAnnouncementPagination() {
+  this.announcementTotalPages = Math.ceil(
+    this.announcements.length / this.announcementPageSize
+  );
+  this.updatePaginatedAnnouncements();
+}
 
-  goToNextWeeklyOffPage() {
-    if (this.weeklyOffCurrentPage < this.weeklyOffTotalPages) {
-      this.weeklyOffCurrentPage++;
-      this.updatePaginatedWeeklyOffPolicies();
-    }
-  }
+updatePaginatedAnnouncements() {
+  const startIndex =
+    (this.announcementCurrentPage - 1) * this.announcementPageSize;
+  const endIndex = startIndex + this.announcementPageSize;
 
-  goToPreviousWeeklyOffPage() {
-    if (this.weeklyOffCurrentPage > 1) {
-      this.weeklyOffCurrentPage--;
-      this.updatePaginatedWeeklyOffPolicies();
-    }
-  }
-  calculateAnnouncementPagination() {
-    this.announcementTotalPages = Math.ceil(
-      this.announcements.length / this.announcementPageSize,
-    );
+  this.paginatedAnnouncements =
+    this.announcements.slice(startIndex, endIndex);
+}
+
+goToNextAnnouncementPage() {
+  if (this.announcementCurrentPage < this.announcementTotalPages) {
+    this.announcementCurrentPage++;
     this.updatePaginatedAnnouncements();
   }
+}
 
-  updatePaginatedAnnouncements() {
-    const startIndex =
-      (this.announcementCurrentPage - 1) * this.announcementPageSize;
-    const endIndex = startIndex + this.announcementPageSize;
-
-    this.paginatedAnnouncements = this.announcements.slice(
-      startIndex,
-      endIndex,
-    );
+goToPreviousAnnouncementPage() {
+  if (this.announcementCurrentPage > 1) {
+    this.announcementCurrentPage--;
+    this.updatePaginatedAnnouncements();
   }
+}
+calculateBusinessUnitPagination() {
+  this.businessUnitTotalPages = Math.ceil(
+    this.businessUnits.length / this.businessUnitPageSize
+  );
+  this.updatePaginatedBusinessUnits();
+}
 
-  goToNextAnnouncementPage() {
-    if (this.announcementCurrentPage < this.announcementTotalPages) {
-      this.announcementCurrentPage++;
-      this.updatePaginatedAnnouncements();
-    }
-  }
+updatePaginatedBusinessUnits() {
+  const startIndex =
+    (this.businessUnitCurrentPage - 1) * this.businessUnitPageSize;
+  const endIndex = startIndex + this.businessUnitPageSize;
 
-  goToPreviousAnnouncementPage() {
-    if (this.announcementCurrentPage > 1) {
-      this.announcementCurrentPage--;
-      this.updatePaginatedAnnouncements();
-    }
-  }
-  calculateBusinessUnitPagination() {
-    this.businessUnitTotalPages = Math.ceil(
-      this.businessUnits.length / this.businessUnitPageSize,
-    );
+  this.paginatedBusinessUnits =
+    this.businessUnits.slice(startIndex, endIndex);
+}
+
+goToNextBusinessUnitPage() {
+  if (this.businessUnitCurrentPage < this.businessUnitTotalPages) {
+    this.businessUnitCurrentPage++;
     this.updatePaginatedBusinessUnits();
   }
+}
 
-  updatePaginatedBusinessUnits() {
-    const startIndex =
-      (this.businessUnitCurrentPage - 1) * this.businessUnitPageSize;
-    const endIndex = startIndex + this.businessUnitPageSize;
-
-    this.paginatedBusinessUnits = this.businessUnits.slice(
-      startIndex,
-      endIndex,
-    );
+goToPreviousBusinessUnitPage() {
+  if (this.businessUnitCurrentPage > 1) {
+    this.businessUnitCurrentPage--;
+    this.updatePaginatedBusinessUnits();
   }
-
-  goToNextBusinessUnitPage() {
-    if (this.businessUnitCurrentPage < this.businessUnitTotalPages) {
-      this.businessUnitCurrentPage++;
-      this.updatePaginatedBusinessUnits();
-    }
-  }
-
-  goToPreviousBusinessUnitPage() {
-    if (this.businessUnitCurrentPage > 1) {
-      this.businessUnitCurrentPage--;
-      this.updatePaginatedBusinessUnits();
-    }
-  }
+}
 }

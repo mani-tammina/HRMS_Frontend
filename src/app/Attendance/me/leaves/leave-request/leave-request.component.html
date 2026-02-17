@@ -1,13 +1,11 @@
 <form class="form-block" [formGroup]="leaveForm">
+
   <!-- Leave Type -->
-  <div class="leaveselect">
+  <div  class="leaveselect">
     <label>Leave Type</label>
     <ion-select formControlName="leave_type" placeholder="Select Leave Type">
-      <ion-select-option
-        *ngFor="let leave of leaveTypes"
-        [value]="leave.id"
-        [disabled]="leave.available <= 0"
-      >
+      <ion-select-option *ngFor="let leave of leaveTypes" [value]="leave.id" [disabled]="leave.available <= 0">
+
         {{ leave.name }} ({{ leave.available }} available)
       </ion-select-option>
     </ion-select>
@@ -17,27 +15,13 @@
   <div class="row-left leaveselect">
     <div class="from-input">
       <label>From</label>
-      <ion-input
-        id="from-input"
-        placeholder="Select Start Date"
-        readonly
-        [value]="
-          selectedDateFrom ? (selectedDateFrom | date: 'dd/MM/yyyy') : ''
-        "
-      >
-        <ion-img
-          slot="end"
-          src="../../../../../assets/Icons/calender.svg"
-          class="calendar-img"
-        ></ion-img>
+      <ion-input id="from-input" placeholder="Select Start Date" readonly [value]="selectedDateFrom ? (selectedDateFrom | date:'dd/MM/yyyy') : ''">
+          <ion-img slot="end" src="../../../../../assets/Icons/calender.svg"  class="calendar-img"></ion-img>
       </ion-input>
 
       <ion-popover #fromPopover trigger="from-input">
         <ng-template>
-          <ion-datetime
-            [min]="minDate"
-            (ionChange)="onDateChangeFrom($event, fromPopover)"
-          >
+          <ion-datetime [min]="minDate" (ionChange)="onDateChangeFrom($event, fromPopover)">
           </ion-datetime>
         </ng-template>
       </ion-popover>
@@ -45,25 +29,13 @@
 
     <div class="to-input">
       <label>To</label>
-      <ion-input
-        id="to-input"
-        placeholder="Select End Date"
-        readonly
-        [value]="selectedDateTo ? (selectedDateTo | date: 'dd/MM/yyyy') : ''"
-      >
-        <ion-img
-          slot="end"
-          src="../../../../../assets/Icons/calender.svg"
-          class="calendar-img"
-        ></ion-img>
+      <ion-input id="to-input" placeholder="Select End Date" readonly [value]="selectedDateTo ? (selectedDateTo | date:'dd/MM/yyyy') : ''">
+         <ion-img slot="end" src="../../../../../assets/Icons/calender.svg"  class="calendar-img"></ion-img>
       </ion-input>
 
       <ion-popover #toPopover trigger="to-input">
         <ng-template>
-          <ion-datetime
-            [min]="leaveForm.value.start_date || minDate"
-            (ionChange)="onDateChangeTo($event, toPopover)"
-          >
+          <ion-datetime [min]="leaveForm.value.start_date || minDate" (ionChange)="onDateChangeTo($event, toPopover)">
           </ion-datetime>
         </ng-template>
       </ion-popover>
@@ -78,57 +50,20 @@
   <!-- Reason -->
   <div>
     <label>Leave Reason</label>
-    <ion-textarea
-      placeholder="Reason for Leave"
-      formControlName="remarks"
-      (ionInput)="validateWordLimit($event)"
-    >
+    <ion-textarea  placeholder="Reason for Leave"  formControlName="remarks" (ionInput)="validateWordLimit($event)">
     </ion-textarea>
     <p>{{ wordsCount }}/100 words</p>
   </div>
 
   <!-- Notify -->
-  <div class="leaveselect notify-wrapper">
+  <div class="leaveselect">
     <label>Notify</label>
-
-    <!-- Selected employee chips -->
-    <div class="selected-chips" *ngIf="selectedEmployees.length > 0">
-      <span class="chip" *ngFor="let emp of selectedEmployees">
-        {{ emp.FullName }}
-        <ion-icon name="close-circle" (click)="removeEmployee(emp)"></ion-icon>
-      </span>
-    </div>
-
-    <!-- Search input -->
-    <ion-input
-      placeholder="Search Employee"
-      [value]="searchQuery"
-      (ionInput)="onNotifySearch($event)"
-      (ionBlur)="hideDropdown()"
-    ></ion-input>
-
-    <!-- Dropdown results -->
-    <div class="search-dropdown" *ngIf="showDropdown">
-      <div
-        class="dropdown-item"
-        *ngFor="let emp of searchResults"
-        (click)="selectEmployee(emp)"
-      >
-        {{ emp.FullName }}
-        <span class="emp-email" *ngIf="emp.WorkEmail">
-          - {{ emp.WorkEmail }}</span
-        >
-      </div>
-    </div>
+    <ion-input  placeholder="Search Employee"  formControlName="notify"></ion-input>
   </div>
 
   <!-- Submit -->
-  <ion-button
-    class="request-btn"
-    expand="block"
-    (click)="submitRequest()"
-    [disabled]="leaveForm.invalid || total_days <= 0"
-  >
+  <ion-button class="request-btn" expand="block" (click)="submitRequest()" [disabled]="leaveForm.invalid || total_days <= 0">
     Request Leave
   </ion-button>
+
 </form>

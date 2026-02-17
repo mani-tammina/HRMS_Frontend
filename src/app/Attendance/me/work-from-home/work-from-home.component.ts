@@ -13,6 +13,7 @@ import { WorkFromHomeService } from 'src/app/services/work-from-home.service';
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class WorkFromHomeComponent implements OnInit {
+
   /* ================= DATE PICKER ================= */
   pickerOpen: 'from' | 'to' | null = null;
 
@@ -21,6 +22,7 @@ export class WorkFromHomeComponent implements OnInit {
 
   displayFromDate = '';
   displayToDate = '';
+  validationError = '';
 
   totalDays = 1;
 
@@ -33,9 +35,6 @@ export class WorkFromHomeComponent implements OnInit {
   note = '';
   notifyEmployee = '';
 
-  /* ================= EXISTING REQUESTS ================= */
-  existingRequests: any[] = [];
-
   /* ================= CALENDAR ================= */
   currentMonth = new Date().getMonth();
   currentYear = new Date().getFullYear();
@@ -45,44 +44,21 @@ export class WorkFromHomeComponent implements OnInit {
 
   weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   months = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
   constructor(
     private modalCtrl: ModalController,
     private wfhService: WorkFromHomeService,
-    private toastCtrl: ToastController,
-  ) {}
+    private toastCtrl: ToastController
+  ) { }
 
   /* ================= INIT ================= */
   ngOnInit() {
     this.updateDisplayDates();
     this.generateCalendar();
     this.calculateDays();
-    this.loadExistingRequests();
-  }
-
-  /* ================= LOAD EXISTING WFH REQUESTS ================= */
-  private loadExistingRequests() {
-    this.wfhService.getAllWFHRequests().subscribe({
-      next: (res: any[]) => {
-        this.existingRequests = res || [];
-      },
-      error: () => {
-        this.existingRequests = [];
-      },
-    });
   }
 
   /* ================= MODAL ================= */
@@ -97,11 +73,7 @@ export class WorkFromHomeComponent implements OnInit {
 
   generateCalendar() {
     const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
-    const totalDays = new Date(
-      this.currentYear,
-      this.currentMonth + 1,
-      0,
-    ).getDate();
+    const totalDays = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
 
     this.blankDays = Array(firstDay).fill(0);
     this.monthDays = Array.from({ length: totalDays }, (_, i) => i + 1);
@@ -181,9 +153,17 @@ export class WorkFromHomeComponent implements OnInit {
 
   calculateDays() {
     const oneDay = 1000 * 60 * 60 * 24;
-    let diff =
-      Math.floor((this.toDate.getTime() - this.fromDate.getTime()) / oneDay) +
-      1;
+    const toTime = this.toDate.getTime();
+    const fromTime = this.fromDate.getTime();
+
+    if (toTime < fromTime) {
+      this.totalDays = 0;
+      this.validationError = 'To date cannot be earlier than From date';
+      return;
+    }
+
+    this.validationError = '';
+    let diff = Math.floor((toTime - fromTime) / oneDay) + 1;
 
     if (diff <= 0) diff = 1;
 
@@ -200,41 +180,9 @@ export class WorkFromHomeComponent implements OnInit {
     this.totalDays = total;
   }
 
-  /* ================= DUPLICATE DATE CHECK ================= */
-  private hasOverlappingRequest(): boolean {
-    const from = this.normalizeDate(this.fromDate);
-    const to = this.normalizeDate(this.toDate);
-
-    return this.existingRequests.some((req) => {
-      const reqStart = this.normalizeDate(new Date(req.start_date));
-      const reqEnd = this.normalizeDate(new Date(req.end_date));
-      // Overlap exists if selected range intersects with an existing request range
-      return from <= reqEnd && to >= reqStart;
-    });
-  }
-
-  private normalizeDate(date: Date): number {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
-  }
-
   /* ================= SUBMIT ================= */
-  async submit() {
-    if (!this.note) return;
-
-    // Check for duplicate / overlapping dates
-    if (this.hasOverlappingRequest()) {
-      const toast = await this.toastCtrl.create({
-        message:
-          'A WFH request already exists for the selected date(s). Please choose a different date.',
-        duration: 3000,
-        color: 'danger',
-        position: 'top',
-      });
-      await toast.present();
-      return;
-    }
+  submit() {
+    if (!this.note || this.validationError) return;
 
     const payload: any = {
       date: this.formatDate(this.fromDate),
