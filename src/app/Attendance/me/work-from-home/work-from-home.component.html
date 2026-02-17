@@ -1,110 +1,133 @@
 <div class="custom-popup">
   <ion-header>
-  <ion-toolbar>
-    <ion-title>Request work from home</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear" (click)="close()">
-        <ion-icon name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+    <ion-toolbar>
+      <ion-title>Request work from home</ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="close()">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
 
-<ion-content class="ion-padding">
-
-  <!-- DATE SECTION -->
-  <div class="date-header">
-    
-    <div class="date-box">
-      <label>From</label>
-      <p [class.active]="pickerOpen==='from'" (click)="openPicker('from')">{{ displayFromDate }}</p>
-    </div>
-
-    <div class="day-count">
-      {{ totalDays }} {{ totalDays === 1 ? 'day' : 'days' }}
-    </div>
-
-    
-    <div class="date-box">
-        <label>To</label>
-        <p  [class.active]="pickerOpen==='to'" (click)="openPicker('to')">{{ displayToDate }}</p>
+  <ion-content class="ion-padding">
+    <!-- DATE SECTION -->
+    <div class="date-header">
+      <div class="date-box">
+        <label>From</label>
+        <p [class.active]="pickerOpen === 'from'" (click)="openPicker('from')">
+          {{ displayFromDate }}
+        </p>
+        <ng-container
+          *ngIf="pickerOpen === 'from'"
+          [ngTemplateOutlet]="calendarTpl"
+        ></ng-container>
       </div>
-  </div>
 
-  <!-- CUSTOM CALENDAR -->
-  <div class="calendar-block" *ngIf="pickerOpen">
+      <div class="day-count">
+        {{ totalDays }} {{ totalDays === 1 ? "day" : "days" }}
+      </div>
 
-    <div class="calendar-header">
-      <ion-icon name="chevron-back" (click)="prevMonth()"></ion-icon>
-      <span>{{ months[currentMonth] }} {{ currentYear }}</span>
-      <ion-icon name="chevron-forward" (click)="nextMonth()"></ion-icon>
+      <div class="date-box">
+        <label>To</label>
+        <p [class.active]="pickerOpen === 'to'" (click)="openPicker('to')">
+          {{ displayToDate }}
+        </p>
+        <ng-container
+          *ngIf="pickerOpen === 'to'"
+          [ngTemplateOutlet]="calendarTpl"
+        ></ng-container>
+      </div>
     </div>
 
-    <div class="weekdays">
-      <span *ngFor="let d of weekDays">{{ d }}</span>
+    <!-- CUSTOM CALENDAR -->
+    <ng-template #calendarTpl>
+      <div class="calendar-block">
+        <div class="calendar-header">
+          <ion-icon name="chevron-back" (click)="prevMonth()"></ion-icon>
+          <span>{{ months[currentMonth] }} {{ currentYear }}</span>
+          <ion-icon name="chevron-forward" (click)="nextMonth()"></ion-icon>
+        </div>
+
+        <div class="weekdays">
+          <span *ngFor="let d of weekDays">{{ d }}</span>
+        </div>
+
+        <div class="calendar-grid">
+          <span *ngFor="let blank of blankDays"></span>
+          <span
+            *ngFor="let day of monthDays"
+            (click)="selectDate(day)"
+            [class.selected]="isSelected(day)"
+          >
+            {{ day }}
+          </span>
+        </div>
+      </div>
+    </ng-template>
+
+    <p class="request-info mt-12">
+      <img src="../../../../assets/icon/note.svg" width="18" /> Clock -in
+      necessary on work from home to avoid being marked absent
+    </p>
+
+    <!-- NOTE -->
+    <div class="input-block">
+      <label class="mb-15">Work Reason *</label>
+      <ion-textarea rows="4" [(ngModel)]="note"></ion-textarea>
     </div>
 
-    <div class="calendar-grid">
-      <span *ngFor="let day of monthDays" (click)="selectDate(day)" [class.selected]="isSelected(day)">
-        {{ day }}
-      </span>
+    <!-- FULL / CUSTOM -->
+    <div class="type-select">
+      <button [class.active]="requestType === 'full'" (click)="setType('full')">
+        Full Days
+      </button>
+      <button
+        [class.active]="requestType === 'custom'"
+        (click)="setType('custom')"
+      >
+        Custom
+      </button>
     </div>
 
-  </div>
+    <!-- HALF DAY -->
+    <div *ngIf="requestType === 'custom'" class="custom-box">
+      <div>
+        <small>From {{ displayFromDate }}</small>
+        <select [(ngModel)]="fromSession" (change)="calculateDays()">
+          <option value="full">Full</option>
+          <option value="first">First Half</option>
+          <option value="second">Second Half</option>
+        </select>
+      </div>
 
-  <p class="request-info mt-12">
-     <img src="../../../../assets/icon/note.svg" width="18"> Clock -in necessary on work from home to avoid being marked absent
-  </p>
-
-  <!-- NOTE -->
-  <div class="input-block">
-    <label class="mb-15">Work Reason *</label>
-    <ion-textarea rows="4" [(ngModel)]="note"></ion-textarea>
-  </div>
-
-  <!-- FULL / CUSTOM -->
-  <div class="type-select">
-    <button [class.active]="requestType==='full'" (click)="setType('full')">Full Days</button>
-    <button [class.active]="requestType==='custom'" (click)="setType('custom')">Custom</button>
-  </div>
-
-  <!-- HALF DAY -->
-  <div *ngIf="requestType==='custom'" class="custom-box">
-
-    <div>
-      <small>From {{ displayFromDate }}</small>
-      <select [(ngModel)]="fromSession" (change)="calculateDays()">
-        <option value="full">Full</option>
-        <option value="first">First Half</option>
-        <option value="second">Second Half</option>
-      </select>
+      <div>
+        <small>To {{ displayToDate }}</small>
+        <select [(ngModel)]="toSession" (change)="calculateDays()">
+          <option value="full">Full</option>
+          <option value="first">First Half</option>
+          <option value="second">Second Half</option>
+        </select>
+      </div>
     </div>
-
-    <div>
-      <small>To {{ displayToDate }}</small>
-      <select [(ngModel)]="toSession" (change)="calculateDays()">
-        <option value="full">Full</option>
-        <option value="first">First Half</option>
-        <option value="second">Second Half</option>
-      </select>
+    <!-- NOTIFY -->
+    <div class="input-block mt-30">
+      <label class="mb-15">Notify</label>
+      <ion-input
+        type="text"
+        [(ngModel)]="notifyEmployee"
+        placeholder="Search employee"
+      ></ion-input>
     </div>
+  </ion-content>
 
+  <div class="footer row-right mr-15">
+    <ion-button class="primary-outline-btn" (click)="close()">
+      Cancel
+    </ion-button>
+
+    <ion-button class="primary-btn" [disabled]="!note" (click)="submit()">
+      Request
+    </ion-button>
   </div>
-  <!-- NOTIFY -->
-  <div class="input-block mt-30">
-    <label class="mb-15">Notify</label>
-    <ion-input type="text" [(ngModel)]="notifyEmployee" placeholder="Search employee" ></ion-input>
-  </div>
-
-</ion-content>
-
-<div class="footer row-right mr-15">
-  <ion-button class="primary-outline-btn" (click)="close()">
-    Cancel
-  </ion-button>
-
-  <ion-button class="primary-btn" [disabled]="!note" (click)="submit()">
-    Request
-  </ion-button>
-</div>
 </div>

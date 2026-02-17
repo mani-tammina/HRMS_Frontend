@@ -8,11 +8,7 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import {
-  IonicModule,
-  ToastController,
-  ModalController,
-} from '@ionic/angular';
+import { IonicModule, ToastController, ModalController } from '@ionic/angular';
 
 import { TimesheetService } from 'src/app/services/timesheets.service';
 import { TimesheetPreviewComponent } from './timesheet-preview.component';
@@ -58,13 +54,15 @@ export class WorkTrackComponent implements OnInit {
     this.timesheetService.uploadClientTimesheet(formData).subscribe({
       next: (res) => {
         this.clientUploadLoading = false;
-        this.showToast(res?.message || 'Client timesheet uploaded successfully');
+        this.showToast(
+          res?.message || 'Client timesheet uploaded successfully',
+        );
         this.clientUploadFile = null;
       },
       error: (err) => {
         this.clientUploadLoading = false;
         this.showToast('Failed to upload client timesheet');
-      }
+      },
     });
   }
 
@@ -96,7 +94,7 @@ export class WorkTrackComponent implements OnInit {
     { value: 9, name: 'September' },
     { value: 10, name: 'October' },
     { value: 11, name: 'November' },
-    { value: 12, name: 'December' }
+    { value: 12, name: 'December' },
   ];
   years: number[] = [];
 
@@ -112,8 +110,8 @@ export class WorkTrackComponent implements OnInit {
     private fb: FormBuilder,
     private timesheetService: TimesheetService,
     private toastCtrl: ToastController,
-    private modalCtrl: ModalController
-  ) { }
+    private modalCtrl: ModalController,
+  ) {}
 
   ngOnInit() {
     this.initForm();
@@ -158,7 +156,7 @@ export class WorkTrackComponent implements OnInit {
 
         // Load timesheets after assignment status is determined
         this.loadMyTimesheets();
-      }
+      },
     });
   }
 
@@ -202,7 +200,7 @@ export class WorkTrackComponent implements OnInit {
         hour: [firstTimeSlot, Validators.required],
         task: ['', Validators.required],
         hours: [1, [Validators.required, Validators.min(0.5)]],
-      })
+      }),
     );
   }
 
@@ -260,7 +258,7 @@ export class WorkTrackComponent implements OnInit {
         hour: [nextTimeSlot, Validators.required],
         task: ['', Validators.required],
         hours: [1, [Validators.required, Validators.min(0.5)]],
-      })
+      }),
     );
   }
 
@@ -293,7 +291,10 @@ export class WorkTrackComponent implements OnInit {
         // Get end time from previous slot as start time for current
         const prevEndTime = prevTimeSlot.split('-')[1];
         const currentHours = Number(currentRow.get('hours')?.value || 1);
-        const newTimeSlot = this.generateTimeSlotWithDuration(prevEndTime, currentHours);
+        const newTimeSlot = this.generateTimeSlotWithDuration(
+          prevEndTime,
+          currentHours,
+        );
 
         currentRow.patchValue({ hour: newTimeSlot }, { emitEvent: false });
       }
@@ -316,7 +317,7 @@ export class WorkTrackComponent implements OnInit {
 
       const endDate = new Date(startDate);
       // Add hours (convert to minutes for precision)
-      endDate.setMinutes(startDate.getMinutes() + (hours * 60));
+      endDate.setMinutes(startDate.getMinutes() + hours * 60);
 
       // Format as "HH:mm-HH:mm"
       const startStr = this.formatTime(startDate);
@@ -338,7 +339,7 @@ export class WorkTrackComponent implements OnInit {
   calculateTotalHours(): number {
     return this.breakdowns.controls.reduce(
       (sum, row) => sum + Number(row.get('hours')?.value || 0),
-      0
+      0,
     );
   }
 
@@ -361,11 +362,10 @@ export class WorkTrackComponent implements OnInit {
 
     /* ================= PROJECT TIMESHEET ================= */
     if (this.hasProject) {
-
       const projectPayload = {
         ...basePayload,
-        project_id: this.assignments?.[0]?.project_id,   // ✅ from assignment API
-        work_description: this.workTrackForm.value.notes // API expects this
+        project_id: this.assignments?.[0]?.project_id, // ✅ from assignment API
+        work_description: this.workTrackForm.value.notes, // API expects this
       };
 
       this.timesheetService.submitProjectTimesheet(projectPayload).subscribe({
@@ -420,7 +420,7 @@ export class WorkTrackComponent implements OnInit {
 
     const filters = {
       month: this.selectedMonth,
-      year: this.selectedYear
+      year: this.selectedYear,
     };
 
     // Load project timesheets if user has project, otherwise regular timesheets
@@ -486,6 +486,14 @@ export class WorkTrackComponent implements OnInit {
 
   /* ================= DOWNLOAD EXCEL (UNCHANGED) ================= */
 
+  utcToIST(utcString: string) {
+    const date = new Date(utcString);
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(date.getTime() + istOffset);
+
+    return istDate.toISOString().split('T')[0];
+  }
+
   downloadExcel(timesheet: any) {
     if (!timesheet || !timesheet.hours_breakdown?.length) {
       return;
@@ -512,7 +520,7 @@ export class WorkTrackComponent implements OnInit {
     </head>
     <body>
       <table border="1">
-        <tr><td>Date</td><td colspan="3">${timesheet.date}</td></tr>
+        <tr><td>Date</td><td colspan="3">${this.utcToIST(timesheet.date)}</td></tr>
         <tr>
           <th>S.No</th><th>Time</th><th>Task</th><th>Hours</th>
         </tr>
@@ -525,12 +533,12 @@ export class WorkTrackComponent implements OnInit {
     `;
 
     const blob = new Blob([html], {
-      type: 'application/vnd.ms-excel;charset=utf-8;'
+      type: 'application/vnd.ms-excel;charset=utf-8;',
     });
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Timesheet_${timesheet.date}.xls`;
+    link.download = `Timesheet_${this.utcToIST(timesheet.date)}.xls`;
     link.click();
     URL.revokeObjectURL(link.href);
   }

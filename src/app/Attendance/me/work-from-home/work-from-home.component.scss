@@ -18,6 +18,8 @@
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     width: 300px;
     position: absolute;
+    top: 100%;
+    left: 0;
     z-index: 9;
     .calendar-header {
       display: flex;
@@ -53,6 +55,7 @@
     justify-content: space-between;
     align-items: center;
     .date-box {
+      position: relative;
       label {
         margin-bottom: 8px;
       }
@@ -65,6 +68,14 @@
         text-align: left;
         width: 210px;
         cursor: pointer;
+      }
+
+      // Specific styling for the "To" date box (last child) to shift calendar left
+      &:last-child {
+        .calendar-block {
+          left: auto;
+          right: 0;
+        }
       }
     }
    .day-count {
