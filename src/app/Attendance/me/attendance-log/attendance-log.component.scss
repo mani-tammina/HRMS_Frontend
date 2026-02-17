@@ -54,9 +54,6 @@
     }
   
   
-p.divider {
-    // border-bottom: 1px solid #9E9E9E;
-  }
   .custom-link {
     @include normal-text();
     text-transform: capitalize;
@@ -188,5 +185,78 @@ h2{
     // background: #e4e4e4;
     padding: 8px 0px;
     border-radius: 8px;
+  }
+}
+
+/* ==========================================================================
+   Keka-style Monthly Filter (Scoped)
+   ========================================================================== */
+.filters {
+  display: flex;
+  align-items: center;
+
+  .filter-block {
+    display: flex;
+    background: #F1F5F9; /* Light slate background */
+    padding: 3px;
+    border-radius: 8px;
+    gap: 2px;
+    border: 1px solid #E2E8F0;
+
+    .btn-secondry {
+      padding: 6px 14px;
+      background: transparent;
+      border: none !important;
+      color: #64748B;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      margin: 0;
+      box-shadow: none !important;
+
+      &.active {
+        background: #1F74BB !important;
+        color: #fff !important;
+        box-shadow: 0 1px 3px rgba(31, 116, 187, 0.3) !important;
+      }
+
+      &:hover:not(.active) {
+        background: rgba(31, 116, 187, 0.05);
+        color: #1F74BB;
+      }
+    }
+  }
+
+  .outline-btns {
+    margin-left: 12px;
+    display: flex;
+    gap: 8px;
+
+    .btn-secondry {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid #E2E8F0;
+      color: #64748B;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0;
+
+      ion-icon {
+        font-size: 18px;
+      }
+
+      &.active {
+        background: #F1F5F9;
+        color: #1F74BB;
+        border-color: #CBD5E0;
+      }
+    }
   }
 }
